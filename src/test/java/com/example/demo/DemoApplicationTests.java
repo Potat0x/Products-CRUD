@@ -33,7 +33,7 @@ public class DemoApplicationTests {
         ResponseEntity<String> response = httpClient.getForEntity(url, String.class);//kb shortcut
         //then
         Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);
-        Assertions.assertThat(response.getBody()).isEqualTo("helloworld");
+        Assertions.assertThat(response.getBody()).isEqualTo("hello heroku world");
     }
 
 }
