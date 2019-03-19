@@ -10,6 +10,6 @@ public class HelloWorldEndpoint {
     @RequestMapping(method= RequestMethod.GET, path = "/hello")
 //    @GetMapping("/hello") //==jw
     String hello(){
-        return "helloworld";
+        return "hello heroku world";
     }
 }
