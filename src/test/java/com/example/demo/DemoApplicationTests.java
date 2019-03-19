@@ -16,7 +16,7 @@ public class DemoApplicationTests {
 
     //spring stworzy instancję
     @Autowired
-    TestRestTemplate httpClient = new TestRestTemplate();
+    TestRestTemplate httpClient;
 
     @LocalServerPort
     int port;
