@@ -6,4 +6,5 @@ import org.springframework.stereotype.Component;
 public interface ProductFacade {
     //crud
     ProductResponseDto create(ProductRequestDto productRequest);
+    ProductResponseDto find(String id);
 }

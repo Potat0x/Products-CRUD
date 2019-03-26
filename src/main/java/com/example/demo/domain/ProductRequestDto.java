@@ -1,8 +1,11 @@
 package com.example.demo.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductRequestDto {
     private final String name;
 
@@ -11,6 +14,7 @@ public class ProductRequestDto {
         this.name = name;
     }
 
+    @JsonGetter("name")
     String getName() {
         return name;
     }

@@ -1,7 +1,7 @@
 package com.example.demo.domain;
 
 import com.example.demo.infrastructure.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -29,5 +29,14 @@ public class ProductFacadeImpl implements ProductFacade {
         repository.save(product);
         ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName());
         return productResponseDto;
+    }
+
+    @Override
+    public ProductResponseDto find(String id) {
+        Product product = repository.find(id);
+        if (product == null) {
+            throw new ProductNotFoundException();
+        }
+        return new ProductResponseDto(product.getId(), product.getName());
     }
 }

@@ -3,13 +3,9 @@ package com.example.demo;
 import com.example.demo.domain.ProductFacade;
 import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+//@RestController("api/products")
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -22,7 +18,11 @@ public class ProductController {
 
     @PostMapping("/add")
     ProductResponseDto createProduct(@RequestBody ProductRequestDto rd) {
-        System.out.println(rd);
         return productFacade.create(rd);
+    }
+
+    @GetMapping("/{id}")
+    ProductResponseDto getProduct(@PathVariable("id") String id) {
+        return productFacade.find(id);
     }
 }
