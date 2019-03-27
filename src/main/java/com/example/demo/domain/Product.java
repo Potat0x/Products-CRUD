@@ -53,4 +53,8 @@ public final class Product {
         result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
         return result;
     }
+
+    public Product withNewName(String newName) {
+        return new Product(id, newName, createdAt);
+    }
 }

@@ -8,11 +8,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ProductEndpointTest extends DemoApplicationTests {
 
@@ -68,5 +73,21 @@ public class ProductEndpointTest extends DemoApplicationTests {
         ResponseEntity<ProductResponseDto> result = httpClient.getForEntity(url, ProductResponseDto.class);
         //then
         Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(404);
+    }
+
+    @Test
+    public void shouldUpdateExistingProduct() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("old name");
+        ProductResponseDto existingProduct = productFacade.create(requestDto);
+        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId() + "?name={newName}";
+        final String newName = "updated name";
+        //when
+        //TestRestTemplate localHttpClient = new TestRestTemplate(new RestTemplateBuilder());
+        ResponseEntity<ProductResponseDto> reponse = httpClient.
+                exchange(url, HttpMethod.PATCH, null, ProductResponseDto.class, Map.of("newName", newName));
+        //then
+        Assertions.assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
+        Assertions.assertThat(reponse.getBody().getName()).isEqualTo(newName);
     }
 }

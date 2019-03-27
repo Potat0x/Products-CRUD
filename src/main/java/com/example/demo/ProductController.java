@@ -25,4 +25,9 @@ public class ProductController {
     ProductResponseDto getProduct(@PathVariable("id") String id) {
         return productFacade.find(id);
     }
+
+    @PatchMapping("/{id}")
+    ProductResponseDto updateProduct(@PathVariable(value = "id") String id, @RequestParam("name") String name) {
+        return productFacade.update(id, name);
+    }
 }

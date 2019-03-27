@@ -39,4 +39,10 @@ public class ProductFacadeImpl implements ProductFacade {
         }
         return new ProductResponseDto(product.getId(), product.getName());
     }
+
+    @Override
+    public ProductResponseDto update(String id, String name) {
+        Product product = repository.update(id, name);
+        return new ProductResponseDto(product.getId(), product.getName());
+    }
 }
