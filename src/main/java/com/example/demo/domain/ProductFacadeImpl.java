@@ -1,6 +1,7 @@
 package com.example.demo.domain;
 
 import com.example.demo.infrastructure.ProductRepository;
+import com.example.demo.infrastructure.exceptions.EmptyProductNameException;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ class ProductFacadeImpl implements ProductFacade {
     @Override
     public ProductResponseDto create(ProductRequestDto productRequest) {
         if (!productRequest.isValid()) {
-            throw new RuntimeException("product name cannot be empty");
+            throw new EmptyProductNameException();
         }
 
         String id = UUID.randomUUID().toString();
