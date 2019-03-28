@@ -31,4 +31,11 @@ public class InMemoryProductRepository implements ProductRepository {
         db.put(updatedProduct.getId(), updatedProduct);
         return updatedProduct;
     }
+
+    @Override
+    public void delete(String id) {
+        if (db.remove(id) == null) {
+            throw new ProductNotFoundException();
+        }
+    }
 }

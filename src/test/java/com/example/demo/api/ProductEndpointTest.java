@@ -4,6 +4,7 @@ import com.example.demo.DemoApplicationTests;
 import com.example.demo.domain.ProductFacade;
 import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
+import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -89,5 +90,17 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //then
         Assertions.assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(reponse.getBody().getName()).isEqualTo(newName);
+    }
+
+    @Test(expected = ProductNotFoundException.class)
+    public void shouldDeleteExistingProduct() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("name");
+        ProductResponseDto existingProduct = productFacade.create(requestDto);
+        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
+        //when
+        httpClient.delete(url);
+        //then
+        productFacade.find(existingProduct.getId());
     }
 }

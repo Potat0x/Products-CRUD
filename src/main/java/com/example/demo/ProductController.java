@@ -30,4 +30,9 @@ public class ProductController {
     ProductResponseDto updateProduct(@PathVariable(value = "id") String id, @RequestParam("name") String name) {
         return productFacade.update(id, name);
     }
+
+    @DeleteMapping("/{id}")
+    void deleteProduct(@PathVariable("id") String id) {
+        productFacade.delete(id);
+    }
 }
