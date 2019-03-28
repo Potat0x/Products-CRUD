@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
-public class ProductFacadeImpl implements ProductFacade {
+class ProductFacadeImpl implements ProductFacade {
 
     private final ProductRepository repository;
 
@@ -23,7 +23,7 @@ public class ProductFacadeImpl implements ProductFacade {
         }
 
         String id = UUID.randomUUID().toString();
-        LocalDateTime now = LocalDateTime.now();//ctrl alt v
+        LocalDateTime now = LocalDateTime.now();
         Product product = new Product(id, productRequest.getName(), now);
 
         repository.save(product);
@@ -33,21 +33,27 @@ public class ProductFacadeImpl implements ProductFacade {
 
     @Override
     public ProductResponseDto find(String id) {
+        checkIfProductExists(id);
         Product product = repository.find(id);
-        if (product == null) {
-            throw new ProductNotFoundException();
-        }
         return new ProductResponseDto(product.getId(), product.getName());
     }
 
     @Override
     public ProductResponseDto update(String id, String name) {
+        checkIfProductExists(id);
         Product product = repository.update(id, name);
         return new ProductResponseDto(product.getId(), product.getName());
     }
 
     @Override
     public void delete(String id) {
+        checkIfProductExists(id);
         repository.delete(id);
+    }
+
+    private void checkIfProductExists(String id) {
+        if (repository.find(id) == null) {
+            throw new ProductNotFoundException();
+        }
     }
 }

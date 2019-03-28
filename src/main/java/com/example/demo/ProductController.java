@@ -5,10 +5,9 @@ import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
 import org.springframework.web.bind.annotation.*;
 
-//@RestController("api/products")
 @RestController
 @RequestMapping("/products")
-public class ProductController {
+class ProductController {
 
     private final ProductFacade productFacade;
 
@@ -16,7 +15,7 @@ public class ProductController {
         this.productFacade = productFacade;
     }
 
-    @PostMapping("/add")
+    @PostMapping()
     ProductResponseDto createProduct(@RequestBody ProductRequestDto rd) {
         return productFacade.create(rd);
     }

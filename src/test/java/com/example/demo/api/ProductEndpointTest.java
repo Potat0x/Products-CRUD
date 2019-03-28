@@ -42,7 +42,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldCreateProduct() throws URISyntaxException {
         //given
-        final String url = "http://localhost:" + port + "/products/add";
+        final String url = "http://localhost:" + port + "/products";
         //when
         ProductRequestDto requestDto = new ProductRequestDto("testname");
         String requestJson = mapToJson(requestDto);
@@ -84,7 +84,6 @@ public class ProductEndpointTest extends DemoApplicationTests {
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId() + "?name={newName}";
         final String newName = "updated name";
         //when
-        //TestRestTemplate localHttpClient = new TestRestTemplate(new RestTemplateBuilder());
         ResponseEntity<ProductResponseDto> reponse = httpClient.
                 exchange(url, HttpMethod.PATCH, null, ProductResponseDto.class, Map.of("newName", newName));
         //then
