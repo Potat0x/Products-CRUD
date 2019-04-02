@@ -18,14 +18,12 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     @Override
-    public ProductResponseDto create(ProductRequestDto productRequest) {
-        if (!productRequest.isValid()) {
-            throw new EmptyProductNameException();
-        }
+    public ProductResponseDto create(ProductRequestDto requestDto) {
+        assertRequestValid(requestDto);
 
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        Product product = new Product(id, productRequest.getName(), now);
+        Product product = new Product(id, requestDto.getName(), now);
 
         repository.save(product);
         ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName());
@@ -34,25 +32,34 @@ class ProductFacadeImpl implements ProductFacade {
 
     @Override
     public ProductResponseDto find(String id) {
-        checkIfProductExists(id);
+        assertProductExists(id);
         Product product = repository.find(id);
         return new ProductResponseDto(product.getId(), product.getName());
     }
 
     @Override
-    public ProductResponseDto update(String id, String name) {
-        checkIfProductExists(id);
-        Product product = repository.update(id, name);
-        return new ProductResponseDto(product.getId(), product.getName());
+    public ProductResponseDto update(String id, ProductRequestDto requestDto) {
+        assertProductExists(id);
+        assertRequestValid(requestDto);
+
+        Product product = repository.find(id);
+        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()));
+        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName());
     }
 
     @Override
     public void delete(String id) {
-        checkIfProductExists(id);
+        assertProductExists(id);
         repository.delete(id);
     }
 
-    private void checkIfProductExists(String id) {
+    private void assertRequestValid(ProductRequestDto productRequestDto) {
+        if (!productRequestDto.isValid()) {
+            throw new EmptyProductNameException();
+        }
+    }
+
+    private void assertProductExists(String id) {
         if (repository.find(id) == null) {
             throw new ProductNotFoundException();
         }

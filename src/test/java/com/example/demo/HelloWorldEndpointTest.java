@@ -14,8 +14,10 @@ public class HelloWorldEndpointTest extends DemoApplicationTests {
     public void shouldReturnGreetings() {
         //given
         final String url = "http://localhost:" + port + "/hello";
+
         //when
-        ResponseEntity<String> response = httpClient.getForEntity(url, String.class);//kb shortcut
+        ResponseEntity<String> response = httpClient.getForEntity(url, String.class);
+
         //then
         Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);
         Assertions.assertThat(response.getBody()).isEqualTo("hello heroku world");
