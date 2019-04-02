@@ -18,5 +18,5 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     //fix "I/O error on PATCH request" when calling TestRestTemplate.exchange
-    testImplementation 'org.apache.httpcomponents:httpclient'
+    //testImplementation 'org.apache.httpcomponents:httpclient'
 }

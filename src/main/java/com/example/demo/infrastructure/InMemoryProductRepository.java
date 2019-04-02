@@ -21,10 +21,10 @@ class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public Product update(String id, String name) {
-        Product updatedProduct = db.get(id).withNewName(name);
-        db.put(updatedProduct.getId(), updatedProduct);
-        return updatedProduct;
+    public Product update(String id, Product product) {
+        Product updatedProdduct = db.get(id).withNewName(product.getName());
+        db.put(product.getId(), product);
+        return updatedProdduct;
     }
 
     @Override

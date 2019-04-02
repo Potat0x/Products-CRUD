@@ -4,9 +4,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public interface ProductFacade {
-    //crud
-    ProductResponseDto create(ProductRequestDto productRequest);
+    ProductResponseDto create(ProductRequestDto requestDto);
     ProductResponseDto find(String id);
-    ProductResponseDto update(String id, String name);
+    ProductResponseDto update(String id, ProductRequestDto requestDto);
     void delete(String id);
 }

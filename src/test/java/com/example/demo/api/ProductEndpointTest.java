@@ -25,28 +25,16 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Autowired
     ProductFacade productFacade;
 
-    private String mapToJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private HttpEntity<String> getHttpRequest(String json) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-        return new HttpEntity<>(json, headers);
-    }
-
     @Test
     public void shouldCreateProduct() throws URISyntaxException {
         //given
         final String url = "http://localhost:" + port + "/products";
+
         //when
         ProductRequestDto requestDto = new ProductRequestDto("testname");
         String requestJson = mapToJson(requestDto);
         ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(url, getHttpRequest(requestJson), ProductResponseDto.class);
+
         //then
         Assertions.assertThat(response.getStatusCodeValue()).isEqualTo(200);//201 created
         ProductResponseDto rdto = response.getBody();
@@ -59,8 +47,10 @@ public class ProductEndpointTest extends DemoApplicationTests {
         ProductRequestDto requestDto = new ProductRequestDto("name2");
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
+
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.getForEntity(url, ProductResponseDto.class);
+
         //then
         Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
@@ -70,8 +60,10 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGet404() {
         //given
         final String url = "http://localhost:" + port + "/products/nonexistentid";
+
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.getForEntity(url, ProductResponseDto.class);
+
         //then
         Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(404);
     }
@@ -81,11 +73,14 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("old name");
         ProductResponseDto existingProduct = productFacade.create(requestDto);
-        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId() + "?name={newName}";
+        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
         final String newName = "updated name";
+        String requestJson = mapToJson(new ProductRequestDto(newName));
+
         //when
-        ResponseEntity<ProductResponseDto> reponse = httpClient.
-                exchange(url, HttpMethod.PATCH, null, ProductResponseDto.class, Map.of("newName", newName));
+        ResponseEntity<ProductResponseDto> reponse =
+                httpClient.exchange(url, HttpMethod.PUT, getHttpRequest(requestJson), ProductResponseDto.class);
+
         //then
         Assertions.assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(reponse.getBody().getName()).isEqualTo(newName);
@@ -97,9 +92,25 @@ public class ProductEndpointTest extends DemoApplicationTests {
         ProductRequestDto requestDto = new ProductRequestDto("name");
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
+
         //when
         httpClient.delete(url);
+
         //then
         productFacade.find(existingProduct.getId());
+    }
+
+    private HttpEntity<String> getHttpRequest(String json) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        return new HttpEntity<>(json, headers);
+    }
+
+    private String mapToJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -25,9 +25,9 @@ class ProductController {
         return productFacade.find(id);
     }
 
-    @PatchMapping("/{id}")
-    ProductResponseDto updateProduct(@PathVariable(value = "id") String id, @RequestParam("name") String name) {
-        return productFacade.update(id, name);
+    @PutMapping("/{id}")
+    ProductResponseDto updateProduct(@PathVariable("id") String id, @RequestBody ProductRequestDto rd) {
+        return productFacade.update(id, rd);
     }
 
     @DeleteMapping("/{id}")
