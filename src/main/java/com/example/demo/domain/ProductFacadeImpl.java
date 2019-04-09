@@ -25,10 +25,10 @@ class ProductFacadeImpl implements ProductFacade {
 
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        Product product = new Product(id, requestDto.getName(), now);
+        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()));
 
         repository.save(product);
-        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName());
+        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()));
         return productResponseDto;
     }
 
@@ -36,7 +36,7 @@ class ProductFacadeImpl implements ProductFacade {
     public ProductResponseDto find(String id) {
         assertProductExists(id);
         Product product = repository.find(id);
-        return new ProductResponseDto(product.getId(), product.getName());
+        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()));
     }
 
     @Override
@@ -46,14 +46,14 @@ class ProductFacadeImpl implements ProductFacade {
 
         Product product = repository.find(id);
         Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()));
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName());
+        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()));
     }
 
     @Override
     public ProductListResponseDto getProducts() {
         List<ProductResponseDto> respnseDtos = new ArrayList<>();
         for (Product p : repository.getAll()) {
-            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName()));
+            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice())));
         }
         return new ProductListResponseDto(respnseDtos);
     }
@@ -66,13 +66,50 @@ class ProductFacadeImpl implements ProductFacade {
 
     private void assertRequestValid(ProductRequestDto productRequestDto) {
         if (!productRequestDto.isValid()) {
-            throw new EmptyProductNameException();
+            throw new EmptyProductNameException("product name cannot be empty");
+        }
+
+        PriceDto price = productRequestDto.getPrice();
+        if (price == null) {
+            throw new EmptyProductNameException("product price cannot be empty");
+        } else {
+            if (price.getCurrency() == null) {
+                throw new EmptyProductNameException("price.currency cannot be empty");
+            }
+            if (isNullOrBlank(price.getAmount())) {
+                throw new EmptyProductNameException("price.amount cannot be empty");
+            }
+            
+            if (!isValidNumber(price.getAmount())) {
+                throw new EmptyProductNameException("price.amount is invalid");
+            }
         }
     }
 
     private void assertProductExists(String id) {
         if (repository.find(id) == null) {
             throw new ProductNotFoundException();
+        }
+    }
+
+    private PriceDto priceToDto(Price price) {
+        return new PriceDto(price.getAmount(), price.getCurrency());
+    }
+
+    private Price priceDtoToPrice(PriceDto dto) {
+        return new Price(dto.getAmount(), dto.getCurrency());
+    }
+
+    private boolean isNullOrBlank(String string) {
+        return string == null || string.isBlank();
+    }
+
+    private boolean isValidNumber(String number) {
+        try {
+            Double.parseDouble(number);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }

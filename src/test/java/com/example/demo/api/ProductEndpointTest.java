@@ -1,10 +1,7 @@
 package com.example.demo.api;
 
 import com.example.demo.DemoApplicationTests;
-import com.example.demo.domain.ProductFacade;
-import com.example.demo.domain.ProductRequestDto;
-import com.example.demo.domain.ProductResponseDto;
-import com.example.demo.domain.ProductListResponseDto;
+import com.example.demo.domain.*;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.assertj.core.api.Assertions;
@@ -22,13 +19,15 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Autowired
     ProductFacade productFacade;
 
+    private final PriceDto dummyPrice = new PriceDto("99.99", "PLN");
+
     @Test
     public void shouldCreateProduct() throws URISyntaxException {
         //given
         final String url = "http://localhost:" + port + "/products";
 
         //when
-        ProductRequestDto requestDto = new ProductRequestDto("testname");
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice);
         String requestJson = mapToJson(requestDto);
         ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(url, getHttpRequest(requestJson), ProductResponseDto.class);
 
@@ -41,7 +40,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGetExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name2");
+        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
 
@@ -58,8 +57,8 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGetExistingProductList() {
         //given
         List<ProductResponseDto> existingProducts = new ArrayList<>();
-        existingProducts.add(productFacade.create(new ProductRequestDto("name1")));
-        existingProducts.add(productFacade.create(new ProductRequestDto("name2")));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice)));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice)));
         final String url = "http://localhost:" + port + "/products/";
 
         //when
@@ -87,11 +86,11 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldUpdateExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("old name");
+        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
         final String newName = "updated name";
-        String requestJson = mapToJson(new ProductRequestDto(newName));
+        String requestJson = mapToJson(new ProductRequestDto(newName, dummyPrice));
 
         //when
         ResponseEntity<ProductResponseDto> reponse =
@@ -105,7 +104,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test(expected = ProductNotFoundException.class)
     public void shouldDeleteExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name");
+        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
 
