@@ -6,6 +6,8 @@ import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -45,6 +47,15 @@ class ProductFacadeImpl implements ProductFacade {
         Product product = repository.find(id);
         Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()));
         return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName());
+    }
+
+    @Override
+    public ProductListResponseDto getProducts() {
+        List<ProductResponseDto> respnseDtos = new ArrayList<>();
+        for (Product p : repository.getAll()) {
+            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName()));
+        }
+        return new ProductListResponseDto(respnseDtos);
     }
 
     @Override

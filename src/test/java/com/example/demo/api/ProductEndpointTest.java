@@ -4,21 +4,18 @@ import com.example.demo.DemoApplicationTests;
 import com.example.demo.domain.ProductFacade;
 import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
+import com.example.demo.domain.ProductListResponseDto;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ProductEndpointTest extends DemoApplicationTests {
 
@@ -54,6 +51,25 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //then
         Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    public void shouldGetExistingProductList() {
+        //given
+        List<ProductResponseDto> existingProducts = new ArrayList<>();
+        existingProducts.add(productFacade.create(new ProductRequestDto("name1")));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name2")));
+        final String url = "http://localhost:" + port + "/products/";
+
+        //when
+        ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(url, ProductListResponseDto.class);
+
+        //then
+        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
+
+        List<ProductResponseDto> products = result.getBody().getProducts();
+        Assertions.assertThat(products.containsAll(existingProducts)).isTrue();
     }
 
     @Test

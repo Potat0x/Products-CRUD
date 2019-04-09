@@ -7,5 +7,6 @@ public interface ProductFacade {
     ProductResponseDto create(ProductRequestDto requestDto);
     ProductResponseDto find(String id);
     ProductResponseDto update(String id, ProductRequestDto requestDto);
+    ProductListResponseDto getProducts();
     void delete(String id);
 }
