@@ -7,12 +7,14 @@ public class ProductResponseDto {
     final String id;
     final String name;
     final PriceDto price;
+    final ImageDto image;
 
     @JsonCreator
-    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price) {
+    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image) {
         this.id = id;
         this.name = name;
         this.price = price;
+        this.image = image;
     }
 
     public String getId() {
@@ -27,12 +29,17 @@ public class ProductResponseDto {
         return price;
     }
 
+    public ImageDto getImage() {
+        return image;
+    }
+
     @Override
     public String toString() {
         return "ProductResponseDto{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", price=" + price +
+                ", image=" + image +
                 '}';
     }
 
@@ -45,7 +52,8 @@ public class ProductResponseDto {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        return price != null ? price.equals(that.price) : that.price == null;
+        if (price != null ? !price.equals(that.price) : that.price != null) return false;
+        return image != null ? image.equals(that.image) : that.image == null;
     }
 
     @Override
@@ -53,6 +61,7 @@ public class ProductResponseDto {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (price != null ? price.hashCode() : 0);
+        result = 31 * result + (image != null ? image.hashCode() : 0);
         return result;
     }
 }

@@ -9,11 +9,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ProductRequestDto {
     private final String name;
     private final PriceDto price;
+    private final ImageDto image;
 
     @JsonCreator
-    public ProductRequestDto(@JsonProperty("name") String name, @JsonProperty("price") PriceDto price) {
+    public ProductRequestDto(@JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image) {
         this.name = name;
         this.price = price;
+        this.image = image;
     }
 
     @JsonGetter("name")
@@ -26,11 +28,17 @@ public class ProductRequestDto {
         return price;
     }
 
+    @JsonGetter("image")
+    public ImageDto getImage() {
+        return image;
+    }
+
     @Override
     public String toString() {
         return "ProductRequestDto{" +
                 "name='" + name + '\'' +
                 ", price=" + price +
+                ", image=" + image +
                 '}';
     }
 

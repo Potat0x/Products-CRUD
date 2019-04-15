@@ -25,10 +25,10 @@ class ProductFacadeImpl implements ProductFacade {
 
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()));
+        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()), new Image(requestDto.getImage().getUrl()));
 
         repository.save(product);
-        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()));
+        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), requestDto.getImage());
         return productResponseDto;
     }
 
@@ -36,7 +36,7 @@ class ProductFacadeImpl implements ProductFacade {
     public ProductResponseDto find(String id) {
         assertProductExists(id);
         Product product = repository.find(id);
-        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()));
+        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), new ImageDto(product.getImage().getUrl()));
     }
 
     @Override
@@ -45,15 +45,15 @@ class ProductFacadeImpl implements ProductFacade {
         assertRequestValid(requestDto);
 
         Product product = repository.find(id);
-        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()));
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()));
+        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()).withNewImage(new Image(requestDto.getImage().getUrl())));
+        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()), requestDto.getImage());
     }
 
     @Override
     public ProductListResponseDto getProducts() {
         List<ProductResponseDto> respnseDtos = new ArrayList<>();
         for (Product p : repository.getAll()) {
-            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice())));
+            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice()), new ImageDto(p.getImage().getUrl())));
         }
         return new ProductListResponseDto(respnseDtos);
     }
@@ -79,9 +79,18 @@ class ProductFacadeImpl implements ProductFacade {
             if (isNullOrBlank(price.getAmount())) {
                 throw new EmptyProductNameException("price.amount cannot be empty");
             }
-            
+
             if (!isValidNumber(price.getAmount())) {
                 throw new EmptyProductNameException("price.amount is invalid");
+            }
+        }
+
+        ImageDto image = productRequestDto.getImage();
+        if (image == null) {
+            throw new EmptyProductNameException("image is required");
+        } else {
+            if (image.getUrl() == null) {
+                throw new EmptyProductNameException("image.url cannot be empty");
             }
         }
     }
