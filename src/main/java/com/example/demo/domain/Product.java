@@ -1,6 +1,7 @@
 package com.example.demo.domain;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 public final class Product {
     private final String id;
@@ -9,14 +10,16 @@ public final class Product {
     private final Price price;
     private final Image image;
     private final Description description;
+    private final Set<Tag> tags;
 
-    public Product(String id, String name, LocalDateTime createdAt, Price price, Image image, Description description) {
+    public Product(String id, String name, LocalDateTime createdAt, Price price, Image image, Description description, Set<Tag> tags) {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
         this.price = price;
         this.image = image;
         this.description = description;
+        this.tags = tags;
     }
 
     public String getId() {
@@ -43,20 +46,28 @@ public final class Product {
         return description;
     }
 
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
     public Product withNewName(String newName) {
-        return new Product(id, newName, createdAt, price, image, description);
+        return new Product(id, newName, createdAt, price, image, description, tags);
     }
 
     public Product withNewImage(Image newImage) {
-        return new Product(id, name, createdAt, price, newImage, description);
+        return new Product(id, name, createdAt, price, newImage, description, tags);
     }
 
     public Product withNewPrice(Price newPrice) {
-        return new Product(id, name, createdAt, newPrice, image, description);
+        return new Product(id, name, createdAt, newPrice, image, description, tags);
     }
 
     public Product withNewDescription(Description newDescription) {
-        return new Product(id, name, createdAt, price, image, newDescription);
+        return new Product(id, name, createdAt, price, image, newDescription, tags);
+    }
+
+    public Product withNewTags(Set<Tag> newTags) {
+        return new Product(id, name, createdAt, price, image, description, newTags);
     }
 
     @Override
@@ -68,6 +79,7 @@ public final class Product {
                 ", price=" + price +
                 ", image=" + image +
                 ", description=" + description +
+                ", tags=" + tags +
                 '}';
     }
 
@@ -83,7 +95,8 @@ public final class Product {
         if (createdAt != null ? !createdAt.equals(product.createdAt) : product.createdAt != null) return false;
         if (price != null ? !price.equals(product.price) : product.price != null) return false;
         if (image != null ? !image.equals(product.image) : product.image != null) return false;
-        return description != null ? description.equals(product.description) : product.description == null;
+        if (description != null ? !description.equals(product.description) : product.description != null) return false;
+        return tags != null ? tags.equals(product.tags) : product.tags == null;
     }
 
     @Override
@@ -94,6 +107,8 @@ public final class Product {
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + (image != null ? image.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (tags != null ? tags.hashCode() : 0);
         return result;
     }
+
 }

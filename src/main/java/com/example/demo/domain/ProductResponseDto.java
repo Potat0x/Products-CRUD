@@ -3,20 +3,24 @@ package com.example.demo.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Set;
+
 public class ProductResponseDto {
     final String id;
     final String name;
     final PriceDto price;
     final ImageDto image;
     final DescriptionDto description;
+    final Set<TagDto> tags;
 
     @JsonCreator
-    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description) {
+    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description, @JsonProperty("tags") Set<TagDto> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
         this.description = description;
+        this.tags = tags;
     }
 
     public String getId() {
@@ -39,6 +43,10 @@ public class ProductResponseDto {
         return description;
     }
 
+    public Set<TagDto> getTags() {
+        return tags;
+    }
+
     @Override
     public String toString() {
         return "ProductResponseDto{" +
@@ -47,6 +55,7 @@ public class ProductResponseDto {
                 ", price=" + price +
                 ", image=" + image +
                 ", description=" + description +
+                ", tags=" + tags +
                 '}';
     }
 
@@ -61,7 +70,8 @@ public class ProductResponseDto {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (price != null ? !price.equals(that.price) : that.price != null) return false;
         if (image != null ? !image.equals(that.image) : that.image != null) return false;
-        return description != null ? description.equals(that.description) : that.description == null;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        return tags != null ? tags.equals(that.tags) : that.tags == null;
     }
 
     @Override
@@ -71,6 +81,7 @@ public class ProductResponseDto {
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + (image != null ? image.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (tags != null ? tags.hashCode() : 0);
         return result;
     }
 }
