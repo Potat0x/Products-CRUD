@@ -8,13 +8,15 @@ public class ProductResponseDto {
     final String name;
     final PriceDto price;
     final ImageDto image;
+    final DescriptionDto description;
 
     @JsonCreator
-    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image) {
+    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
+        this.description = description;
     }
 
     public String getId() {
@@ -33,6 +35,10 @@ public class ProductResponseDto {
         return image;
     }
 
+    public DescriptionDto getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return "ProductResponseDto{" +
@@ -40,6 +46,7 @@ public class ProductResponseDto {
                 ", name='" + name + '\'' +
                 ", price=" + price +
                 ", image=" + image +
+                ", description=" + description +
                 '}';
     }
 
@@ -53,7 +60,8 @@ public class ProductResponseDto {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (price != null ? !price.equals(that.price) : that.price != null) return false;
-        return image != null ? image.equals(that.image) : that.image == null;
+        if (image != null ? !image.equals(that.image) : that.image != null) return false;
+        return description != null ? description.equals(that.description) : that.description == null;
     }
 
     @Override
@@ -62,6 +70,7 @@ public class ProductResponseDto {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
     }
 }

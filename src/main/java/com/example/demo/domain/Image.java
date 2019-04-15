@@ -12,6 +12,13 @@ public class Image {
     }
 
     @Override
+    public String toString() {
+        return "Image{" +
+                "url='" + url + '\'' +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Image)) return false;

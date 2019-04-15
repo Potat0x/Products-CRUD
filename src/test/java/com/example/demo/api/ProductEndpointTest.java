@@ -21,6 +21,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
 
     private final PriceDto dummyPrice = new PriceDto("99.99", "PLN");
     private final ImageDto dummyImage = new ImageDto("https://via.placeholder.com/150");
+    private final DescriptionDto dummyDescription = new DescriptionDto("long description");
 
     @Test
     public void shouldCreateProduct() throws URISyntaxException {
@@ -28,7 +29,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
         final String url = "http://localhost:" + port + "/products";
 
         //when
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, dummyDescription);
         String requestJson = mapToJson(requestDto);
         ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(url, getHttpRequest(requestJson), ProductResponseDto.class);
 
@@ -41,7 +42,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGetExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImage);
+        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
 
@@ -58,8 +59,8 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGetExistingProductList() {
         //given
         List<ProductResponseDto> existingProducts = new ArrayList<>();
-        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImage)));
-        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImage)));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription)));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription)));
         final String url = "http://localhost:" + port + "/products/";
 
         //when
@@ -87,12 +88,14 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldUpdateExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImage);
+        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImage, dummyDescription);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
         final String newName = "updated name";
         final ImageDto newImage = new ImageDto("https://via.placeholder.com/250");
-        String requestJson = mapToJson(new ProductRequestDto(newName, dummyPrice, newImage));
+        final DescriptionDto newDescription = new DescriptionDto("updated description");
+        final PriceDto newPrice = new PriceDto("30000", "USD");
+        String requestJson = mapToJson(new ProductRequestDto(newName, newPrice, newImage, newDescription));
 
         //when
         ResponseEntity<ProductResponseDto> reponse =
@@ -102,12 +105,14 @@ public class ProductEndpointTest extends DemoApplicationTests {
         Assertions.assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(reponse.getBody().getName()).isEqualTo(newName);
         Assertions.assertThat(reponse.getBody().getImage()).isEqualTo(newImage);
+        Assertions.assertThat(reponse.getBody().getPrice()).isEqualTo(newPrice);
+        Assertions.assertThat(reponse.getBody().getDescription()).isEqualTo(newDescription);
     }
 
     @Test(expected = ProductNotFoundException.class)
     public void shouldDeleteExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImage);
+        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImage, dummyDescription);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
 

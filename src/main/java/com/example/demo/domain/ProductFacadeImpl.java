@@ -25,10 +25,10 @@ class ProductFacadeImpl implements ProductFacade {
 
         String id = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()), new Image(requestDto.getImage().getUrl()));
+        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()), new Image(requestDto.getImage().getUrl()), new Description(requestDto.getDescription().getText()));
 
         repository.save(product);
-        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), requestDto.getImage());
+        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), requestDto.getImage(), requestDto.getDescription());
         return productResponseDto;
     }
 
@@ -36,7 +36,7 @@ class ProductFacadeImpl implements ProductFacade {
     public ProductResponseDto find(String id) {
         assertProductExists(id);
         Product product = repository.find(id);
-        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), new ImageDto(product.getImage().getUrl()));
+        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), new ImageDto(product.getImage().getUrl()), new DescriptionDto(product.getDescription().getText()));
     }
 
     @Override
@@ -45,15 +45,22 @@ class ProductFacadeImpl implements ProductFacade {
         assertRequestValid(requestDto);
 
         Product product = repository.find(id);
-        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()).withNewImage(new Image(requestDto.getImage().getUrl())));
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()), requestDto.getImage());
+
+        PriceDto newPriceDto = requestDto.getPrice();
+        Price newPrice = new Price(newPriceDto.getAmount(), newPriceDto.getCurrency());
+
+        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()).withNewImage(new Image(requestDto.getImage().getUrl())).withNewDescription(new Description(requestDto.getDescription().getText())).withNewPrice(newPrice));
+        System.out.println(requestDto.getImage());
+        System.out.println(product.withNewImage(new Image(requestDto.getImage().getUrl())));
+        System.out.println(updatedProduct);
+        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()), new ImageDto(updatedProduct.getImage().getUrl()), new DescriptionDto(updatedProduct.getDescription().getText()));
     }
 
     @Override
     public ProductListResponseDto getProducts() {
         List<ProductResponseDto> respnseDtos = new ArrayList<>();
         for (Product p : repository.getAll()) {
-            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice()), new ImageDto(p.getImage().getUrl())));
+            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice()), new ImageDto(p.getImage().getUrl()), new DescriptionDto(p.getDescription().getText())));
         }
         return new ProductListResponseDto(respnseDtos);
     }
@@ -91,6 +98,15 @@ class ProductFacadeImpl implements ProductFacade {
         } else {
             if (image.getUrl() == null) {
                 throw new EmptyProductNameException("image.url cannot be empty");
+            }
+        }
+
+        DescriptionDto description = productRequestDto.getDescription();
+        if (description == null) {
+            throw new EmptyProductNameException("description is required");
+        } else {
+            if (description.getText() == null) {
+                throw new EmptyProductNameException("description.text cannot be empty");
             }
         }
     }

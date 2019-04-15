@@ -10,12 +10,14 @@ public class ProductRequestDto {
     private final String name;
     private final PriceDto price;
     private final ImageDto image;
+    private final DescriptionDto description;
 
     @JsonCreator
-    public ProductRequestDto(@JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image) {
+    public ProductRequestDto(@JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description) {
         this.name = name;
         this.price = price;
         this.image = image;
+        this.description = description;
     }
 
     @JsonGetter("name")
@@ -33,12 +35,18 @@ public class ProductRequestDto {
         return image;
     }
 
+    @JsonGetter("description")
+    public DescriptionDto getDescription() {
+        return description;
+    }
+
     @Override
     public String toString() {
         return "ProductRequestDto{" +
                 "name='" + name + '\'' +
                 ", price=" + price +
                 ", image=" + image +
+                ", description=" + description +
                 '}';
     }
 

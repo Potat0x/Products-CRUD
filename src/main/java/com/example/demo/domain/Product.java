@@ -8,13 +8,15 @@ public final class Product {
     private final LocalDateTime createdAt;
     private final Price price;
     private final Image image;
+    private final Description description;
 
-    public Product(String id, String name, LocalDateTime createdAt, Price price, Image image) {
+    public Product(String id, String name, LocalDateTime createdAt, Price price, Image image, Description description) {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
         this.price = price;
         this.image = image;
+        this.description = description;
     }
 
     public String getId() {
@@ -37,14 +39,26 @@ public final class Product {
         return image;
     }
 
+    public Description getDescription() {
+        return description;
+    }
+
     public Product withNewName(String newName) {
-        return new Product(id, newName, createdAt, price, image);
+        return new Product(id, newName, createdAt, price, image, description);
     }
 
     public Product withNewImage(Image newImage) {
-        return new Product(id, name, createdAt, price, newImage);
+        return new Product(id, name, createdAt, price, newImage, description);
     }
-    
+
+    public Product withNewPrice(Price newPrice) {
+        return new Product(id, name, createdAt, newPrice, image, description);
+    }
+
+    public Product withNewDescription(Description newDescription) {
+        return new Product(id, name, createdAt, price, image, newDescription);
+    }
+
     @Override
     public String toString() {
         return "Product{" +
@@ -53,6 +67,7 @@ public final class Product {
                 ", createdAt=" + createdAt +
                 ", price=" + price +
                 ", image=" + image +
+                ", description=" + description +
                 '}';
     }
 
@@ -67,7 +82,8 @@ public final class Product {
         if (name != null ? !name.equals(product.name) : product.name != null) return false;
         if (createdAt != null ? !createdAt.equals(product.createdAt) : product.createdAt != null) return false;
         if (price != null ? !price.equals(product.price) : product.price != null) return false;
-        return image != null ? image.equals(product.image) : product.image == null;
+        if (image != null ? !image.equals(product.image) : product.image != null) return false;
+        return description != null ? description.equals(product.description) : product.description == null;
     }
 
     @Override
@@ -77,6 +93,7 @@ public final class Product {
         result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
         result = 31 * result + (price != null ? price.hashCode() : 0);
         result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
         return result;
     }
 }
