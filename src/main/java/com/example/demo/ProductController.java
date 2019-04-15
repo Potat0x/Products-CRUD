@@ -6,6 +6,8 @@ import com.example.demo.domain.ProductResponseDto;
 import com.example.demo.domain.ProductListResponseDto;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 class ProductController {
@@ -27,8 +29,8 @@ class ProductController {
     }
 
     @GetMapping
-    ProductListResponseDto getProducts(){
-        return productFacade.getProducts();
+    ProductListResponseDto getProducts(@RequestParam(required = false, name = "tag") List<String> tags) {
+        return productFacade.getProducts(tags);
     }
 
     @PutMapping("/{id}")

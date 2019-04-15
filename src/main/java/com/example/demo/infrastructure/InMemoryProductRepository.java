@@ -1,13 +1,13 @@
 package com.example.demo.infrastructure;
 
 import com.example.demo.domain.Product;
+import com.example.demo.domain.Tag;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Repository
 class InMemoryProductRepository implements ProductRepository {
@@ -39,6 +39,18 @@ class InMemoryProductRepository implements ProductRepository {
     public List<Product> getAll() {
         List<Product> allProducts = new ArrayList<>();
         db.keySet().forEach(id -> allProducts.add(db.get(id)));
+        return allProducts;
+    }
+
+    @Override
+    public List<Product> getByTags(List<String> tags) {
+        List<Product> allProducts = new ArrayList<>();
+        db.keySet().forEach(id -> {
+            Product product = db.get(id);
+            if (product.getTags().stream().map(Tag::getName).collect(Collectors.toList()).containsAll(tags)) {
+                allProducts.add(product);
+            }
+        });
         return allProducts;
     }
 }

@@ -7,13 +7,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ProductEndpointTest extends DemoApplicationTests {
 
@@ -54,6 +59,38 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //then
         Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
         Assertions.assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
+    }
+
+    @Test
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    public void shouldGetExistingProductsByTags() {
+        //given
+        Set<TagDto> tags1 = tagDtoSetFromTagNames("tag1", "tag4");
+        Set<TagDto> tags2 = tagDtoSetFromTagNames("tag1", "tag2");
+        Set<TagDto> tags3 = tagDtoSetFromTagNames("tag1", "tag3, tag4");
+        Set<TagDto> tags4 = tagDtoSetFromTagNames("tag1", "tag4", "tag2");
+
+        List<ProductRequestDto> productsToCreateDtos = new ArrayList<>();
+        productsToCreateDtos.add(new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, tags1));
+        productsToCreateDtos.add(new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, tags2));
+        productsToCreateDtos.add(new ProductRequestDto("name3", dummyPrice, dummyImage, dummyDescription, tags3));
+        productsToCreateDtos.add(new ProductRequestDto("name4", dummyPrice, dummyImage, dummyDescription, tags4));
+
+        for (ProductRequestDto requestDto : productsToCreateDtos) {
+            productFacade.create(requestDto);
+        }
+
+        final String url = "http://localhost:" + port + "/products?tag=tag1&tag=tag2";
+
+        Set<Set<TagDto>> expectedTags = Set.of(tags2, tags4);
+        //when
+        ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(url, ProductListResponseDto.class);
+        Set<Set<TagDto>> fetchedProductsTags = result.getBody().getProducts().stream().map(ProductResponseDto::getTags).collect(Collectors.toSet());
+
+        //then
+        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        Assertions.assertThat(fetchedProductsTags.size()).isEqualTo(expectedTags.size());
+        Assertions.assertThat(fetchedProductsTags).containsAll(expectedTags);
     }
 
     @Test
@@ -140,5 +177,13 @@ public class ProductEndpointTest extends DemoApplicationTests {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Set<TagDto> tagDtoSetFromTagNames(String... names) {
+        Set<TagDto> tagSet = new HashSet<>();
+        for (String name : names) {
+            tagSet.add(new TagDto(name));
+        }
+        return tagSet;
     }
 }

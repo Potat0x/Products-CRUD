@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
 
 @Component
 class ProductFacadeImpl implements ProductFacade {
@@ -55,9 +54,10 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     @Override
-    public ProductListResponseDto getProducts() {
+    public ProductListResponseDto getProducts(List<String> tags) {
         List<ProductResponseDto> respnseDtos = new ArrayList<>();
-        for (Product p : repository.getAll()) {
+        List<Product> fetchedProduct = (tags == null ? repository.getAll() : repository.getByTags(tags));
+        for (Product p : fetchedProduct) {
             respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice()), new ImageDto(p.getImage().getUrl()), new DescriptionDto(p.getDescription().getText()), tagsToTagDtos(p.getTags())));
         }
         return new ProductListResponseDto(respnseDtos);

@@ -10,4 +10,5 @@ public interface ProductRepository {
     Product update(String id, Product product);
     void delete(String id);
     List<Product> getAll();
+    List<Product> getByTags(List<String> tags);
 }
