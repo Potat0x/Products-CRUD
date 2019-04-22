@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 
 public class ProductResponseDto {
-    final String id;
-    final String name;
-    final PriceDto price;
-    final ImageDto image;
-    final DescriptionDto description;
-    final Set<TagDto> tags;
+    private final String id;
+    private final String name;
+    private final PriceDto price;
+    private final ImageDto image;
+    private final DescriptionDto description;
+    private final Set<TagDto> tags;
 
     @JsonCreator
     public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description, @JsonProperty("tags") Set<TagDto> tags) {

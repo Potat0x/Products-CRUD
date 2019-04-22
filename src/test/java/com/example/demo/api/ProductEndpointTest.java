@@ -4,7 +4,6 @@ import com.example.demo.DemoApplicationTests;
 import com.example.demo.domain.*;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -13,12 +12,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class ProductEndpointTest extends DemoApplicationTests {
 
@@ -30,20 +28,88 @@ public class ProductEndpointTest extends DemoApplicationTests {
     private final DescriptionDto dummyDescription = new DescriptionDto("long description");
     private final Set<TagDto> dummyTags = Set.of(new TagDto("tag1"), new TagDto("tag2"));
 
+    private String baseUrl() {
+        return appUrl() + "/products";
+    }
+
     @Test
-    public void shouldCreateProduct() throws URISyntaxException {
+    public void shouldCreateProduct() {
         //given
-        final String url = "http://localhost:" + port + "/products";
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, dummyDescription, dummyTags);
 
         //when
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, dummyDescription, dummyTags);
         String requestJson = mapToJson(requestDto);
-        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(url, getHttpRequest(requestJson), ProductResponseDto.class);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
 
         //then
-        Assertions.assertThat(response.getStatusCodeValue()).isEqualTo(200);//201 created
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);//201 created
         ProductResponseDto rdto = response.getBody();
-        Assertions.assertThat(rdto.getName()).isEqualTo("testname");
+        assertThat(rdto.getName()).isEqualTo("testname");
+    }
+
+    @Test
+    public void shouldGet422DueToEmptyName() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("", dummyPrice, dummyImage, dummyDescription, dummyTags);
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldGet422DueToInvalidImageUrl() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescription, dummyTags);
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldGet422DueToInvalidCurrencyCode() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("123", "boom"), dummyImage, dummyDescription, dummyTags);
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldGet422DueToInvalidPriceAmount() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("boom", "PLN"), dummyImage, dummyDescription, dummyTags);
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldGet422DueToEmptyDescription() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, new DescriptionDto(""), dummyTags);
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
     }
 
     @Test
@@ -51,14 +117,14 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
-        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
+        String url = baseUrl() + "/" + existingProduct.getId();
 
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.getForEntity(url, ProductResponseDto.class);
 
         //then
-        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        Assertions.assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
     }
 
     @Test
@@ -70,58 +136,55 @@ public class ProductEndpointTest extends DemoApplicationTests {
         Set<TagDto> tags3 = tagDtoSetFromTagNames("tag1", "tag3, tag4");
         Set<TagDto> tags4 = tagDtoSetFromTagNames("tag1", "tag4", "tag2");
 
-        List<ProductRequestDto> productsToCreateDtos = new ArrayList<>();
-        productsToCreateDtos.add(new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, tags1));
-        productsToCreateDtos.add(new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, tags2));
-        productsToCreateDtos.add(new ProductRequestDto("name3", dummyPrice, dummyImage, dummyDescription, tags3));
-        productsToCreateDtos.add(new ProductRequestDto("name4", dummyPrice, dummyImage, dummyDescription, tags4));
+        Arrays.asList(
+                new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, tags1),
+                new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, tags2),
+                new ProductRequestDto("name3", dummyPrice, dummyImage, dummyDescription, tags3),
+                new ProductRequestDto("name4", dummyPrice, dummyImage, dummyDescription, tags4)
+        ).forEach(requestDto -> productFacade.create(requestDto));
 
-        for (ProductRequestDto requestDto : productsToCreateDtos) {
-            productFacade.create(requestDto);
-        }
-
-        final String url = "http://localhost:" + port + "/products?tag=tag1&tag=tag2";
-
+        String url = baseUrl() + "?tag=tag1&tag=tag2";
         Set<Set<TagDto>> expectedTags = Set.of(tags2, tags4);
+
         //when
         ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(url, ProductListResponseDto.class);
         Set<Set<TagDto>> fetchedProductsTags = result.getBody().getProducts().stream().map(ProductResponseDto::getTags).collect(Collectors.toSet());
 
         //then
-        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        Assertions.assertThat(fetchedProductsTags.size()).isEqualTo(expectedTags.size());
-        Assertions.assertThat(fetchedProductsTags).containsAll(expectedTags);
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(fetchedProductsTags.size()).isEqualTo(expectedTags.size());
+        assertThat(fetchedProductsTags).containsAll(expectedTags);
     }
 
     @Test
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
-    public void shouldGetExistingProductList() {
+    public void shouldGetExistingProducts() {
         //given
         List<ProductResponseDto> existingProducts = new ArrayList<>();
         existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, dummyTags)));
         existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, dummyTags)));
-        final String url = "http://localhost:" + port + "/products/";
 
         //when
-        ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(url, ProductListResponseDto.class);
+        ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(baseUrl(), ProductListResponseDto.class);
 
         //then
-        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
 
         List<ProductResponseDto> products = result.getBody().getProducts();
-        Assertions.assertThat(products.containsAll(existingProducts)).isTrue();
+        assertThat(products.size()).isEqualTo(existingProducts.size());
+        assertThat(products.containsAll(existingProducts)).isTrue();
     }
 
     @Test
     public void shouldGet404() {
         //given
-        final String url = "http://localhost:" + port + "/products/nonexistentid";
+        String url = baseUrl() + "/boom";
 
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.getForEntity(url, ProductResponseDto.class);
 
         //then
-        Assertions.assertThat(result.getStatusCodeValue()).isEqualTo(404);
+        assertThat(result.getStatusCodeValue()).isEqualTo(404);
     }
 
     @Test
@@ -129,26 +192,25 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImage, dummyDescription, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
-        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
-        final String newName = "updated name";
-        final ImageDto newImage = new ImageDto("https://via.placeholder.com/250");
-        final DescriptionDto newDescription = new DescriptionDto("updated description");
-        final PriceDto newPrice = new PriceDto("30000", "USD");
-        final Set<TagDto> newTags = Set.of(new TagDto("tag1"), new TagDto("tag22"), new TagDto("tag3"));
+        String url = baseUrl() + "/" + existingProduct.getId();
 
-        String requestJson = mapToJson(new ProductRequestDto(newName, newPrice, newImage, newDescription, newTags));
+        String newName = "updated name";
+        ImageDto newImage = new ImageDto("https://via.placeholder.com/250");
+        DescriptionDto newDescription = new DescriptionDto("updated description");
+        PriceDto newPrice = new PriceDto("30000", "USD");
+        Set<TagDto> newTags = Set.of(new TagDto("tag1"), new TagDto("tag22"), new TagDto("tag3"));
 
         //when
-        ResponseEntity<ProductResponseDto> reponse =
-                httpClient.exchange(url, HttpMethod.PUT, getHttpRequest(requestJson), ProductResponseDto.class);
+        String requestJson = mapToJson(new ProductRequestDto(newName, newPrice, newImage, newDescription, newTags));
+        ResponseEntity<ProductResponseDto> reponse = httpClient.exchange(url, HttpMethod.PUT, getHttpRequest(requestJson), ProductResponseDto.class);
 
         //then
-        Assertions.assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
-        Assertions.assertThat(reponse.getBody().getName()).isEqualTo(newName);
-        Assertions.assertThat(reponse.getBody().getImage()).isEqualTo(newImage);
-        Assertions.assertThat(reponse.getBody().getPrice()).isEqualTo(newPrice);
-        Assertions.assertThat(reponse.getBody().getDescription()).isEqualTo(newDescription);
-        Assertions.assertThat(reponse.getBody().getTags()).isEqualTo(newTags);
+        assertThat(reponse.getStatusCodeValue()).isEqualTo(200);
+        assertThat(reponse.getBody().getName()).isEqualTo(newName);
+        assertThat(reponse.getBody().getImage()).isEqualTo(newImage);
+        assertThat(reponse.getBody().getPrice()).isEqualTo(newPrice);
+        assertThat(reponse.getBody().getDescription()).isEqualTo(newDescription);
+        assertThat(reponse.getBody().getTags()).isEqualTo(newTags);
     }
 
     @Test(expected = ProductNotFoundException.class)
@@ -156,7 +218,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImage, dummyDescription, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
-        final String url = "http://localhost:" + port + "/products/" + existingProduct.getId();
+        String url = baseUrl() + "/" + existingProduct.getId();
 
         //when
         httpClient.delete(url);

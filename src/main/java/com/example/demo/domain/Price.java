@@ -1,20 +1,31 @@
 package com.example.demo.domain;
 
-final class Price {
-    private final String amount;
-    private final String currency;
 
-    public Price(String amount, String currency) {
-        this.amount = amount;
-        this.currency = currency;
+import java.math.BigDecimal;
+
+final class Price {
+    private final BigDecimal amount;
+    private final CurrencyCode currencyCode;
+
+    public Price(String amount, CurrencyCode currencyCode) {
+        this.amount = new BigDecimal(amount);
+        this.currencyCode = currencyCode;
     }
 
-    public String getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public String getCurrency() {
-        return currency;
+    public CurrencyCode getCurrencyCode() {
+        return currencyCode;
+    }
+
+    @Override
+    public String toString() {
+        return "Price{" +
+                "amount=" + amount +
+                ", currencyCode=" + currencyCode +
+                '}';
     }
 
     @Override
@@ -25,13 +36,13 @@ final class Price {
         Price price = (Price) o;
 
         if (amount != null ? !amount.equals(price.amount) : price.amount != null) return false;
-        return currency != null ? currency.equals(price.currency) : price.currency == null;
+        return currencyCode == price.currencyCode;
     }
 
     @Override
     public int hashCode() {
         int result = amount != null ? amount.hashCode() : 0;
-        result = 31 * result + (currency != null ? currency.hashCode() : 0);
+        result = 31 * result + (currencyCode != null ? currencyCode.hashCode() : 0);
         return result;
     }
 }

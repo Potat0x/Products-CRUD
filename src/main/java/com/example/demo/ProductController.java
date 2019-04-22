@@ -1,9 +1,9 @@
 package com.example.demo;
 
 import com.example.demo.domain.ProductFacade;
+import com.example.demo.domain.ProductListResponseDto;
 import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
-import com.example.demo.domain.ProductListResponseDto;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

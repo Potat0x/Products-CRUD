@@ -4,9 +4,10 @@ import com.example.demo.domain.Product;
 import com.example.demo.domain.Tag;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
@@ -37,20 +38,18 @@ class InMemoryProductRepository implements ProductRepository {
 
     @Override
     public List<Product> getAll() {
-        List<Product> allProducts = new ArrayList<>();
-        db.keySet().forEach(id -> allProducts.add(db.get(id)));
-        return allProducts;
+        return db.keySet().stream().map(db::get).collect(Collectors.toList());
     }
 
     @Override
     public List<Product> getByTags(List<String> tags) {
-        List<Product> allProducts = new ArrayList<>();
+        List<Product> productsByTags = new ArrayList<>();
         db.keySet().forEach(id -> {
             Product product = db.get(id);
             if (product.getTags().stream().map(Tag::getName).collect(Collectors.toList()).containsAll(tags)) {
-                allProducts.add(product);
+                productsByTags.add(product);
             }
         });
-        return allProducts;
+        return productsByTags;
     }
 }

@@ -19,4 +19,8 @@ public abstract class DemoApplicationTests {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    protected String appUrl() {
+        return "http://localhost:" + port;
+    }
 }

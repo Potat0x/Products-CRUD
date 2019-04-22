@@ -1,12 +1,18 @@
 package com.example.demo.domain;
 
 import com.example.demo.infrastructure.ProductRepository;
-import com.example.demo.infrastructure.exceptions.EmptyProductNameException;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
+import com.example.demo.infrastructure.exceptions.UnprocessableEntityException;
+import com.google.common.base.Strings;
 import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 class ProductFacadeImpl implements ProductFacade {
@@ -22,20 +28,37 @@ class ProductFacadeImpl implements ProductFacade {
         assertRequestValid(requestDto);
 
         String id = UUID.randomUUID().toString();
-        LocalDateTime now = LocalDateTime.now();
-        Product product = new Product(id, requestDto.getName(), now, priceDtoToPrice(requestDto.getPrice()), new Image(requestDto.getImage().getUrl()), new Description(requestDto.getDescription().getText()), tagDtosToTags(requestDto.getTags()));
+        Product product = new Product(id, requestDto.getName(), LocalDateTime.now(),
+                priceDtoToPrice(requestDto.getPrice()),
+                new Image(requestDto.getImage().getUrl()),
+                new Description(requestDto.getDescription().getText()),
+                tagDtosToTags(requestDto.getTags()));
 
         repository.save(product);
-        //todo: requestDto.getImage(), requestDto.getDescription() ->_
-        ProductResponseDto productResponseDto = new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), requestDto.getImage(), requestDto.getDescription(), tagsToTagDtos(product.getTags()));
-        return productResponseDto;
+
+        ImageDto imageDto = new ImageDto(product.getImage().getUrl());
+        DescriptionDto descriptionDto = new DescriptionDto(product.getDescription().getText());
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                priceToDto(product.getPrice()),
+                imageDto, descriptionDto,
+                tagsToTagDtos(product.getTags())
+        );
     }
 
     @Override
     public ProductResponseDto find(String id) {
         assertProductExists(id);
         Product product = repository.find(id);
-        return new ProductResponseDto(product.getId(), product.getName(), priceToDto(product.getPrice()), new ImageDto(product.getImage().getUrl()), new DescriptionDto(product.getDescription().getText()), tagsToTagDtos(product.getTags()));
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                priceToDto(product.getPrice()),
+                new ImageDto(product.getImage().getUrl()),
+                new DescriptionDto(product.getDescription().getText()),
+                tagsToTagDtos(product.getTags())
+        );
     }
 
     @Override
@@ -46,21 +69,32 @@ class ProductFacadeImpl implements ProductFacade {
         Product product = repository.find(id);
 
         PriceDto newPriceDto = requestDto.getPrice();
-        Price newPrice = new Price(newPriceDto.getAmount(), newPriceDto.getCurrency());
+        Price newPrice = new Price(newPriceDto.getAmount(), CurrencyCode.valueOf(newPriceDto.getCurrency()));
         Set<Tag> newTags = tagDtosToTags(requestDto.getTags());
 
-        Product updatedProduct = repository.update(id, product.withNewName(requestDto.getName()).withNewImage(new Image(requestDto.getImage().getUrl())).withNewDescription(new Description(requestDto.getDescription().getText())).withNewPrice(newPrice).withNewTags(newTags));
+        Product updatedProduct = repository.update(id,
+                product.withNewName(requestDto.getName())
+                        .withNewImage(new Image(requestDto.getImage().getUrl()))
+                        .withNewDescription(new Description(requestDto.getDescription().getText()))
+                        .withNewPrice(newPrice).withNewTags(newTags)
+        );
+
         return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()), new ImageDto(updatedProduct.getImage().getUrl()), new DescriptionDto(updatedProduct.getDescription().getText()), tagsToTagDtos(updatedProduct.getTags()));
     }
 
     @Override
     public ProductListResponseDto getProducts(List<String> tags) {
-        List<ProductResponseDto> respnseDtos = new ArrayList<>();
-        List<Product> fetchedProduct = (tags == null ? repository.getAll() : repository.getByTags(tags));
-        for (Product p : fetchedProduct) {
-            respnseDtos.add(new ProductResponseDto(p.getId(), p.getName(), priceToDto(p.getPrice()), new ImageDto(p.getImage().getUrl()), new DescriptionDto(p.getDescription().getText()), tagsToTagDtos(p.getTags())));
-        }
-        return new ProductListResponseDto(respnseDtos);
+        List<Product> fetchedProducts = (tags == null ? repository.getAll() : repository.getByTags(tags));
+        return new ProductListResponseDto(fetchedProducts.stream()
+                .map(p -> new ProductResponseDto(
+                        p.getId(),
+                        p.getName(),
+                        priceToDto(p.getPrice()),
+                        new ImageDto(p.getImage().getUrl()),
+                        new DescriptionDto(p.getDescription().getText()),
+                        tagsToTagDtos(p.getTags()))
+                )
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -71,49 +105,61 @@ class ProductFacadeImpl implements ProductFacade {
 
     private void assertRequestValid(ProductRequestDto productRequestDto) {
         if (!productRequestDto.isValid()) {
-            throw new EmptyProductNameException("product name cannot be empty");
+            throw new UnprocessableEntityException("product name cannot be empty");
         }
 
         PriceDto price = productRequestDto.getPrice();
         if (price == null) {
-            throw new EmptyProductNameException("product price cannot be empty");
+            throw new UnprocessableEntityException("product price cannot be empty");
         } else {
             if (price.getCurrency() == null) {
-                throw new EmptyProductNameException("price.currency cannot be empty");
+                throw new UnprocessableEntityException("price.currency cannot be empty");
+            } else {
+                try {
+                    CurrencyCode.valueOf(price.getCurrency());
+                } catch (IllegalArgumentException e) {
+                    throw new UnprocessableEntityException("invalid price.currency");
+                }
             }
-            if (isNullOrBlank(price.getAmount())) {
-                throw new EmptyProductNameException("price.amount cannot be empty");
+            if (Strings.isNullOrEmpty(price.getAmount())) {
+                throw new UnprocessableEntityException("price.amount cannot be empty");
             }
 
             if (!isValidNumber(price.getAmount())) {
-                throw new EmptyProductNameException("price.amount is invalid");
+                throw new UnprocessableEntityException("invalid price.amount");
             }
         }
 
         ImageDto image = productRequestDto.getImage();
         if (image == null) {
-            throw new EmptyProductNameException("image is required");
+            throw new UnprocessableEntityException("image is required");
         } else {
             if (image.getUrl() == null) {
-                throw new EmptyProductNameException("image.url cannot be empty");
+                throw new UnprocessableEntityException("image.url cannot be empty");
+            }
+
+            try {
+                new URL(image.getUrl());
+            } catch (MalformedURLException e) {
+                throw new UnprocessableEntityException("invalid image.url");
             }
         }
 
         DescriptionDto description = productRequestDto.getDescription();
         if (description == null) {
-            throw new EmptyProductNameException("description is required");
+            throw new UnprocessableEntityException("description is required");
         } else {
-            if (description.getText() == null) {
-                throw new EmptyProductNameException("description.text cannot be empty");
+            if (Strings.isNullOrEmpty(description.getText())) {
+                throw new UnprocessableEntityException("description.text cannot be empty");
             }
         }
 
         Set<TagDto> tagDtos = productRequestDto.getTags();
         if (tagDtos == null) {
-            throw new EmptyProductNameException("tags are required");
+            throw new UnprocessableEntityException("tags are required");
         } else {
             if (tagDtos.stream().anyMatch(tagDto -> tagDto.getName() == null)) {
-                throw new EmptyProductNameException("tag.name cannot be empty");
+                throw new UnprocessableEntityException("tag.name cannot be empty");
             }
         }
     }
@@ -125,27 +171,19 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     private PriceDto priceToDto(Price price) {
-        return new PriceDto(price.getAmount(), price.getCurrency());
+        return new PriceDto(price.getAmount().toString(), price.getCurrencyCode().toString());
     }
 
     private Price priceDtoToPrice(PriceDto dto) {
-        return new Price(dto.getAmount(), dto.getCurrency());
+        return new Price(dto.getAmount(), CurrencyCode.valueOf(dto.getCurrency()));
     }
 
     private Set<TagDto> tagsToTagDtos(Set<Tag> tags) {
-        Set<TagDto> tagDtos = new HashSet<>();
-        tags.forEach(tag -> tagDtos.add(new TagDto(tag.getName())));
-        return tagDtos;
+        return tags.stream().map(tag -> new TagDto(tag.getName())).collect(Collectors.toSet());
     }
 
     private Set<Tag> tagDtosToTags(Set<TagDto> tagDtos) {
-        Set<Tag> tags = new HashSet<>();
-        tagDtos.forEach(tagDto -> tags.add(new Tag(tagDto.getName())));
-        return tags;
-    }
-
-    private boolean isNullOrBlank(String string) {
-        return string == null || string.isBlank();
+        return tagDtos.stream().map(tagDto -> new Tag(tagDto.getName())).collect(Collectors.toSet());
     }
 
     private boolean isValidNumber(String number) {
