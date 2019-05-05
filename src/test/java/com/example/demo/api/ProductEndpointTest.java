@@ -24,8 +24,8 @@ public class ProductEndpointTest extends DemoApplicationTests {
     ProductFacade productFacade;
 
     private final PriceDto dummyPrice = new PriceDto("99.99", "PLN");
-    private final ImageDto dummyImage = new ImageDto("https://via.placeholder.com/150");
-    private final DescriptionDto dummyDescription = new DescriptionDto("long description");
+    private final ImageDto dummyImg = new ImageDto("https://via.placeholder.com/150");
+    private final DescriptionDto dummyDescr = new DescriptionDto("long description");
     private final Set<TagDto> dummyTags = Set.of(new TagDto("tag1"), new TagDto("tag2"));
 
     private String baseUrl() {
@@ -35,7 +35,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldCreateProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, dummyDescr, dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -50,7 +50,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGet422DueToEmptyName() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("", dummyPrice, dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("", dummyPrice, dummyImg, dummyDescr, dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -63,7 +63,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGet422DueToInvalidImageUrl() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescr, dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -76,7 +76,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGet422DueToInvalidCurrencyCode() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("123", "boom"), dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("123", "boom"), dummyImg, dummyDescr, dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -89,7 +89,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGet422DueToInvalidPriceAmount() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("boom", "PLN"), dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("boom", "PLN"), dummyImg, dummyDescr, dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -102,7 +102,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGet422DueToEmptyDescription() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImage, new DescriptionDto(""), dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, new DescriptionDto(""), dummyTags);
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -115,7 +115,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGetExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
@@ -131,29 +131,24 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     public void shouldGetExistingProductsByTags() {
         //given
-        Set<TagDto> tags1 = tagDtoSetFromTagNames("tag1", "tag4");
-        Set<TagDto> tags2 = tagDtoSetFromTagNames("tag1", "tag2");
-        Set<TagDto> tags3 = tagDtoSetFromTagNames("tag1", "tag3, tag4");
-        Set<TagDto> tags4 = tagDtoSetFromTagNames("tag1", "tag4", "tag2");
-
         Arrays.asList(
-                new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, tags1),
-                new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, tags2),
-                new ProductRequestDto("name3", dummyPrice, dummyImage, dummyDescription, tags3),
-                new ProductRequestDto("name4", dummyPrice, dummyImage, dummyDescription, tags4)
+                new ProductRequestDto("name1", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag4")),
+                new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag2")),
+                new ProductRequestDto("name3", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag3, tag4")),
+                new ProductRequestDto("name4", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag4", "tag2"))
         ).forEach(requestDto -> productFacade.create(requestDto));
 
         String url = baseUrl() + "?tag=tag1&tag=tag2";
-        Set<Set<TagDto>> expectedTags = Set.of(tags2, tags4);
+        Set<String> expectedProductsNames = Set.of("name2", "name4");
 
         //when
         ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(url, ProductListResponseDto.class);
-        Set<Set<TagDto>> fetchedProductsTags = result.getBody().getProducts().stream().map(ProductResponseDto::getTags).collect(Collectors.toSet());
+        Set<String> fetchedProductsNames = result.getBody().getProducts().stream().map(ProductResponseDto::getName).collect(Collectors.toSet());
 
         //then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(fetchedProductsTags.size()).isEqualTo(expectedTags.size());
-        assertThat(fetchedProductsTags).containsAll(expectedTags);
+        assertThat(fetchedProductsNames.size()).isEqualTo(expectedProductsNames.size());
+        assertThat(fetchedProductsNames).containsAll(expectedProductsNames);
     }
 
     @Test
@@ -161,8 +156,8 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGetExistingProducts() {
         //given
         List<ProductResponseDto> existingProducts = new ArrayList<>();
-        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImage, dummyDescription, dummyTags)));
-        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImage, dummyDescription, dummyTags)));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImg, dummyDescr, dummyTags)));
+        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, dummyTags)));
 
         //when
         ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(baseUrl(), ProductListResponseDto.class);
@@ -190,7 +185,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldUpdateExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImg, dummyDescr, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
@@ -216,7 +211,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test(expected = ProductNotFoundException.class)
     public void shouldDeleteExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImage, dummyDescription, dummyTags);
+        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImg, dummyDescr, dummyTags);
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
