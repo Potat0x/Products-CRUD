@@ -36,29 +36,14 @@ class ProductFacadeImpl implements ProductFacade {
 
         repository.save(product);
 
-        ImageDto imageDto = new ImageDto(product.getImage().getUrl());
-        DescriptionDto descriptionDto = new DescriptionDto(product.getDescription().getText());
-        return new ProductResponseDto(
-                product.getId(),
-                product.getName(),
-                priceToDto(product.getPrice()),
-                imageDto, descriptionDto,
-                tagsToTagDtos(product.getTags())
-        );
+        return productToResponseDto(product);
     }
 
     @Override
     public ProductResponseDto find(String id) {
         assertProductExists(id);
         Product product = repository.find(id);
-        return new ProductResponseDto(
-                product.getId(),
-                product.getName(),
-                priceToDto(product.getPrice()),
-                new ImageDto(product.getImage().getUrl()),
-                new DescriptionDto(product.getDescription().getText()),
-                tagsToTagDtos(product.getTags())
-        );
+        return productToResponseDto(product);
     }
 
     @Override
@@ -79,21 +64,14 @@ class ProductFacadeImpl implements ProductFacade {
                         .withNewPrice(newPrice).withNewTags(newTags)
         );
 
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), priceToDto(updatedProduct.getPrice()), new ImageDto(updatedProduct.getImage().getUrl()), new DescriptionDto(updatedProduct.getDescription().getText()), tagsToTagDtos(updatedProduct.getTags()));
+        return productToResponseDto(updatedProduct);
     }
 
     @Override
     public ProductListResponseDto getProducts(List<String> tags) {
         List<Product> fetchedProducts = (tags == null ? repository.getAll() : repository.getByTags(tags));
         return new ProductListResponseDto(fetchedProducts.stream()
-                .map(p -> new ProductResponseDto(
-                        p.getId(),
-                        p.getName(),
-                        priceToDto(p.getPrice()),
-                        new ImageDto(p.getImage().getUrl()),
-                        new DescriptionDto(p.getDescription().getText()),
-                        tagsToTagDtos(p.getTags()))
-                )
+                .map(this::productToResponseDto)
                 .collect(Collectors.toList()));
     }
 
@@ -170,16 +148,23 @@ class ProductFacadeImpl implements ProductFacade {
         }
     }
 
-    private PriceDto priceToDto(Price price) {
-        return new PriceDto(price.getAmount().toString(), price.getCurrencyCode().toString());
-    }
-
-    private Price priceDtoToPrice(PriceDto dto) {
-        return new Price(dto.getAmount(), CurrencyCode.valueOf(dto.getCurrency()));
+    private ProductResponseDto productToResponseDto(Product product) {
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                new PriceDto(product.getPrice().getAmount().toString(), product.getPrice().getCurrencyCode().toString()),
+                new ImageDto(product.getImage().getUrl()),
+                new DescriptionDto(product.getDescription().getText()),
+                tagsToTagDtos(product.getTags())
+        );
     }
 
     private Set<TagDto> tagsToTagDtos(Set<Tag> tags) {
         return tags.stream().map(tag -> new TagDto(tag.getName())).collect(Collectors.toSet());
+    }
+
+    private Price priceDtoToPrice(PriceDto dto) {
+        return new Price(dto.getAmount(), CurrencyCode.valueOf(dto.getCurrency()));
     }
 
     private Set<Tag> tagDtosToTags(Set<TagDto> tagDtos) {

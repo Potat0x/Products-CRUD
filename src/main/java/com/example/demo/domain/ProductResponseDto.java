@@ -14,7 +14,12 @@ public class ProductResponseDto {
     private final Set<TagDto> tags;
 
     @JsonCreator
-    public ProductResponseDto(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("price") PriceDto price, @JsonProperty("image") ImageDto image, @JsonProperty("description") DescriptionDto description, @JsonProperty("tags") Set<TagDto> tags) {
+    public ProductResponseDto(@JsonProperty("id") String id,
+                              @JsonProperty("name") String name,
+                              @JsonProperty("price") PriceDto price,
+                              @JsonProperty("image") ImageDto image,
+                              @JsonProperty("description") DescriptionDto description,
+                              @JsonProperty("tags") Set<TagDto> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
