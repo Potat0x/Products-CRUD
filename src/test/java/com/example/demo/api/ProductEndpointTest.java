@@ -44,7 +44,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
         //then
         assertThat(response.getStatusCodeValue()).isEqualTo(201);
         ProductResponseDto rdto = response.getBody();
-        assertThat(rdto.getName()).isEqualTo("testname");
+        assertThat(rdto.getName()).isEqualTo("testname"); //only name checking here, better implementation in Spock tests
     }
 
     @Test
