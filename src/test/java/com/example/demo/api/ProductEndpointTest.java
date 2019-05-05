@@ -42,7 +42,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
         ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
 
         //then
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);//201 created
+        assertThat(response.getStatusCodeValue()).isEqualTo(201);
         ProductResponseDto rdto = response.getBody();
         assertThat(rdto.getName()).isEqualTo("testname");
     }

@@ -4,6 +4,7 @@ import com.example.demo.domain.ProductFacade;
 import com.example.demo.domain.ProductListResponseDto;
 import com.example.demo.domain.ProductRequestDto;
 import com.example.demo.domain.ProductResponseDto;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ class ProductController {
     }
 
     @PostMapping()
+    @ResponseStatus(HttpStatus.CREATED)
     ProductResponseDto createProduct(@RequestBody ProductRequestDto rd) {
         return productFacade.create(rd);
     }
@@ -39,6 +41,7 @@ class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteProduct(@PathVariable("id") String id) {
         productFacade.delete(id);
     }
