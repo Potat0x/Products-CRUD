@@ -50,27 +50,7 @@ final public class Product {
     public Set<Tag> getTags() {
         return tags;
     }
-
-    public Product withNewName(String newName) {
-        return new Product(id, newName, createdAt, price, image, description, tags);
-    }
-
-    public Product withNewImage(Image newImage) {
-        return new Product(id, name, createdAt, price, newImage, description, tags);
-    }
-
-    public Product withNewPrice(Price newPrice) {
-        return new Product(id, name, createdAt, newPrice, image, description, tags);
-    }
-
-    public Product withNewDescription(Description newDescription) {
-        return new Product(id, name, createdAt, price, image, newDescription, tags);
-    }
-
-    public Product withNewTags(Set<Tag> newTags) {
-        return new Product(id, name, createdAt, price, image, description, newTags);
-    }
-
+    
     @Override
     public String toString() {
         return "Product{" +

@@ -26,11 +26,7 @@ class ProductFacadeImpl implements ProductFacade {
         assertRequestValid(requestDto);
 
         String id = UUID.randomUUID().toString();
-        Product product = new Product(id, requestDto.getName(), LocalDateTime.now(),
-                priceDtoToPrice(requestDto.getPrice()),
-                new Image(requestDto.getImage().getUrl()),
-                new Description(requestDto.getDescription().getText()),
-                tagDtosToTags(requestDto.getTags()));
+        Product product = createProductFromRequestDto(id, requestDto);
 
         repository.save(product);
 
@@ -49,19 +45,7 @@ class ProductFacadeImpl implements ProductFacade {
         assertProductExists(id);
         assertRequestValid(requestDto);
 
-        Product product = repository.find(id);
-
-        PriceDto newPriceDto = requestDto.getPrice();
-        Price newPrice = new Price(newPriceDto.getAmount(), CurrencyCode.valueOf(newPriceDto.getCurrency()));
-        Set<Tag> newTags = tagDtosToTags(requestDto.getTags());
-
-        Product updatedProduct = repository.update(id,
-                product.withNewName(requestDto.getName())
-                        .withNewImage(new Image(requestDto.getImage().getUrl()))
-                        .withNewDescription(new Description(requestDto.getDescription().getText()))
-                        .withNewPrice(newPrice).withNewTags(newTags)
-        );
-
+        Product updatedProduct = repository.update(id, createProductFromRequestDto(id, requestDto));
         return productToResponseDto(updatedProduct);
     }
 
@@ -77,6 +61,17 @@ class ProductFacadeImpl implements ProductFacade {
     public void delete(String id) {
         assertProductExists(id);
         repository.delete(id);
+    }
+
+    private Product createProductFromRequestDto(String id, ProductRequestDto dto) {
+        return new ProductBuilder()
+                .setId(id)
+                .setCreatedAt(LocalDateTime.now())
+                .setName(dto.getName())
+                .setPrice(priceDtoToPrice(dto.getPrice()))
+                .setImage(new Image(dto.getImage().getUrl()))
+                .setDescription(new Description(dto.getDescription().getText()))
+                .setTags(tagDtosToTags(dto.getTags())).build();
     }
 
     private void assertRequestValid(ProductRequestDto productRequestDto) {
