@@ -1,7 +1,9 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import java.util.Objects;
 
@@ -21,6 +23,42 @@ public class PriceDto {
 
     public String getCurrency() {
         return currency;
+    }
+
+    static void assertValid(PriceDto price) {
+        if (price == null) {
+            throw new InvalidDtoException("product price cannot be empty");
+        }
+
+        if (Strings.isNullOrEmpty(price.getCurrency())) {
+            throw new InvalidDtoException("price.currency cannot be empty");
+        } else {
+            try {
+                CurrencyCode.valueOf(price.getCurrency());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidDtoException("invalid price.currency");
+            }
+        }
+
+        if (Strings.isNullOrEmpty(price.getAmount())) {
+            throw new InvalidDtoException("price.amount cannot be empty");
+        }
+
+        try {
+            if (Double.parseDouble(price.getAmount()) < 0) {
+                throw new InvalidDtoException("price.amount cannot be negative");
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidDtoException("invalid price.amount");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "PriceDto{" +
+                "amount='" + amount + '\'' +
+                ", currency='" + currency + '\'' +
+                '}';
     }
 
     @Override

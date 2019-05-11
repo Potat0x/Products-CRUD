@@ -1,8 +1,10 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import java.util.Set;
 
@@ -47,6 +49,21 @@ public class ProductRequestDto {
         return tags;
     }
 
+    public void assertValid() {
+        if (Strings.isNullOrEmpty(name)) {
+            throw new InvalidDtoException("product name cannot be empty");
+        }
+
+        if (tags == null || tags.isEmpty()) {
+            throw new InvalidDtoException("tags are required");
+        }
+        tags.forEach(TagDto::assertValid);
+
+        PriceDto.assertValid(price);
+        ImageDto.assertValid(image);
+        DescriptionDto.assertValid(description);
+    }
+
     @Override
     public String toString() {
         return "ProductRequestDto{" +
@@ -56,9 +73,5 @@ public class ProductRequestDto {
                 ", description=" + description +
                 ", tags=" + tags +
                 '}';
-    }
-
-    boolean isValid() {
-        return name != null && !name.isBlank();
     }
 }

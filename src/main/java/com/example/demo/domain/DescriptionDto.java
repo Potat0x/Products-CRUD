@@ -1,7 +1,9 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import java.util.Objects;
 
@@ -15,6 +17,16 @@ public final class DescriptionDto {
 
     public String getText() {
         return text;
+    }
+
+    static void assertValid(DescriptionDto description) {
+        if (description == null) {
+            throw new InvalidDtoException("description is required");
+        }
+
+        if (Strings.isNullOrEmpty(description.getText())) {
+            throw new InvalidDtoException("description.text cannot be empty");
+        }
     }
 
     @Override

@@ -1,7 +1,9 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import java.util.Objects;
 
@@ -15,6 +17,16 @@ public class TagDto {
 
     public String getName() {
         return name;
+    }
+
+    static void assertValid(TagDto tag) {
+        if (tag == null) {
+            throw new InvalidDtoException("tags are required");
+        }
+
+        if (Strings.isNullOrEmpty(tag.getName())) {
+            throw new InvalidDtoException("tag.name cannot be empty");
+        }
     }
 
     @Override

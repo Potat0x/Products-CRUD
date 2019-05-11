@@ -1,8 +1,12 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Objects;
 
 public class ImageDto {
@@ -15,6 +19,22 @@ public class ImageDto {
 
     public String getUrl() {
         return url;
+    }
+
+    static void assertValid(ImageDto image) {
+        if (image == null) {
+            throw new InvalidDtoException("image is required");
+        }
+
+        if (Strings.isNullOrEmpty(image.getUrl())) {
+            throw new InvalidDtoException("image.url cannot be empty");
+        }
+
+        try {
+            new URL(image.getUrl());
+        } catch (MalformedURLException e) {
+            throw new InvalidDtoException("invalid image.url");
+        }
     }
 
     @Override

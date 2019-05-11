@@ -62,6 +62,32 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
+    public void shouldReceive422DueToEmptyTagName() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("", "tag"));
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldReceive422DueToEmptyTagList() {
+        //given
+        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames());
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
     public void shouldReceive422DueToInvalidImageUrl() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescr, dummyTags);

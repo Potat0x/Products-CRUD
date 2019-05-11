@@ -1,13 +1,11 @@
 package com.example.demo.domain;
 
+import com.example.demo.domain.exceptions.InvalidDtoException;
 import com.example.demo.infrastructure.ProductRepository;
 import com.example.demo.infrastructure.exceptions.ProductNotFoundException;
 import com.example.demo.infrastructure.exceptions.UnprocessableEntityException;
-import com.google.common.base.Strings;
 import org.springframework.stereotype.Component;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -82,63 +80,10 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     private void assertRequestValid(ProductRequestDto productRequestDto) {
-        if (!productRequestDto.isValid()) {
-            throw new UnprocessableEntityException("product name cannot be empty");
-        }
-
-        PriceDto price = productRequestDto.getPrice();
-        if (price == null) {
-            throw new UnprocessableEntityException("product price cannot be empty");
-        } else {
-            if (price.getCurrency() == null) {
-                throw new UnprocessableEntityException("price.currency cannot be empty");
-            } else {
-                try {
-                    CurrencyCode.valueOf(price.getCurrency());
-                } catch (IllegalArgumentException e) {
-                    throw new UnprocessableEntityException("invalid price.currency");
-                }
-            }
-            if (Strings.isNullOrEmpty(price.getAmount())) {
-                throw new UnprocessableEntityException("price.amount cannot be empty");
-            }
-
-            if (!isValidNumber(price.getAmount())) {
-                throw new UnprocessableEntityException("invalid price.amount");
-            }
-        }
-
-        ImageDto image = productRequestDto.getImage();
-        if (image == null) {
-            throw new UnprocessableEntityException("image is required");
-        } else {
-            if (image.getUrl() == null) {
-                throw new UnprocessableEntityException("image.url cannot be empty");
-            }
-
-            try {
-                new URL(image.getUrl());
-            } catch (MalformedURLException e) {
-                throw new UnprocessableEntityException("invalid image.url");
-            }
-        }
-
-        DescriptionDto description = productRequestDto.getDescription();
-        if (description == null) {
-            throw new UnprocessableEntityException("description is required");
-        } else {
-            if (Strings.isNullOrEmpty(description.getText())) {
-                throw new UnprocessableEntityException("description.text cannot be empty");
-            }
-        }
-
-        Set<TagDto> tagDtos = productRequestDto.getTags();
-        if (tagDtos == null) {
-            throw new UnprocessableEntityException("tags are required");
-        } else {
-            if (tagDtos.stream().anyMatch(tagDto -> tagDto.getName() == null)) {
-                throw new UnprocessableEntityException("tag.name cannot be empty");
-            }
+        try {
+            productRequestDto.assertValid();
+        } catch (InvalidDtoException e) {
+            throw new UnprocessableEntityException(e.getMessage());
         }
     }
 
@@ -171,12 +116,4 @@ class ProductFacadeImpl implements ProductFacade {
         return tagDtos.stream().map(tagDto -> new Tag(tagDto.getName())).collect(Collectors.toSet());
     }
 
-    private boolean isValidNumber(String number) {
-        try {
-            Double.parseDouble(number);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
 }
