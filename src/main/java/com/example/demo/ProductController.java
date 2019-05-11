@@ -31,8 +31,8 @@ class ProductController {
     }
 
     @GetMapping
-    ProductListResponseDto getProducts(@RequestParam(required = false, name = "tag") List<String> tags) {
-        return productFacade.getProducts(tags);
+    ProductListResponseDto getProductsByTags(@RequestParam(required = false, name = "tag") List<String> tags) {
+        return productFacade.getProductsByTags(tags);
     }
 
     @PutMapping("/{id}")

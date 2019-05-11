@@ -68,7 +68,7 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     @Override
-    public ProductListResponseDto getProducts(List<String> tags) {
+    public ProductListResponseDto getProductsByTags(List<String> tags) {
         List<Product> fetchedProducts = (tags == null ? repository.getAll() : repository.getByTags(tags));
         return new ProductListResponseDto(fetchedProducts.stream()
                 .map(this::productToResponseDto)

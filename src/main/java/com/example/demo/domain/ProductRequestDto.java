@@ -1,7 +1,6 @@
 package com.example.demo.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -28,27 +27,22 @@ public class ProductRequestDto {
         this.tags = tags;
     }
 
-    @JsonGetter("name")
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    @JsonGetter("price")
     public PriceDto getPrice() {
         return price;
     }
 
-    @JsonGetter("image")
     public ImageDto getImage() {
         return image;
     }
 
-    @JsonGetter("description")
     public DescriptionDto getDescription() {
         return description;
     }
 
-    @JsonGetter("tags")
     public Set<TagDto> getTags() {
         return tags;
     }

@@ -12,8 +12,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,9 +32,6 @@ public class ProductEndpointTest extends DemoApplicationTests {
     private final DescriptionDto dummyDescr = new DescriptionDto("long description");
     private final Set<TagDto> dummyTags = Set.of(new TagDto("tag1"), new TagDto("tag2"));
 
-    private String baseUrl() {
-        return appUrl() + "/products";
-    }
 
     @Test
     public void shouldCreateProduct() {
@@ -48,7 +49,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToEmptyName() {
+    public void shouldReceive422DueToEmptyName() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("", dummyPrice, dummyImg, dummyDescr, dummyTags);
 
@@ -61,7 +62,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidImageUrl() {
+    public void shouldReceive422DueToInvalidImageUrl() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescr, dummyTags);
 
@@ -74,7 +75,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidCurrencyCode() {
+    public void shouldReceive422DueToInvalidCurrencyCode() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("123", "boom"), dummyImg, dummyDescr, dummyTags);
 
@@ -87,7 +88,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidPriceAmount() {
+    public void shouldReceive422DueToInvalidPriceAmount() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("boom", "PLN"), dummyImg, dummyDescr, dummyTags);
 
@@ -100,7 +101,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToEmptyDescription() {
+    public void shouldReceive422DueToEmptyDescription() {
         //given
         ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, new DescriptionDto(""), dummyTags);
 
@@ -171,7 +172,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet404() {
+    public void shouldReceive404() {
         //given
         String url = baseUrl() + "/boom";
 
@@ -237,10 +238,10 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     private Set<TagDto> tagDtoSetFromTagNames(String... names) {
-        Set<TagDto> tagSet = new HashSet<>();
-        for (String name : names) {
-            tagSet.add(new TagDto(name));
-        }
-        return tagSet;
+        return Stream.of(names).map(TagDto::new).collect(Collectors.toSet());
+    }
+
+    private String baseUrl() {
+        return appUrl() + "/products";
     }
 }

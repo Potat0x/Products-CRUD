@@ -26,9 +26,8 @@ class InMemoryProductRepository implements ProductRepository {
 
     @Override
     public Product update(String id, Product updatedProduct) {
-        Product productToUpdate = db.get(id);
-        db.put(productToUpdate.getId(), updatedProduct);
-        return db.get(productToUpdate.getId());
+        db.put(id, updatedProduct);
+        return db.get(id);
     }
 
     @Override
@@ -38,14 +37,13 @@ class InMemoryProductRepository implements ProductRepository {
 
     @Override
     public List<Product> getAll() {
-        return db.keySet().stream().map(db::get).collect(Collectors.toList());
+        return new ArrayList<>(db.values());
     }
 
     @Override
     public List<Product> getByTags(List<String> tags) {
         List<Product> productsByTags = new ArrayList<>();
-        db.keySet().forEach(id -> {
-            Product product = db.get(id);
+        db.values().forEach(product -> {
             if (product.getTags().stream().map(Tag::getName).collect(Collectors.toList()).containsAll(tags)) {
                 productsByTags.add(product);
             }

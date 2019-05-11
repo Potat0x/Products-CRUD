@@ -1,6 +1,12 @@
 package com.example.demo.api
 
-import com.example.demo.domain.*
+import com.example.demo.domain.DescriptionDto
+import com.example.demo.domain.ImageDto
+import com.example.demo.domain.PriceDto
+import com.example.demo.domain.ProductFacade
+import com.example.demo.domain.ProductRequestDto
+import com.example.demo.domain.ProductResponseDto
+import com.example.demo.domain.TagDto
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.json.JsonGenerator
@@ -37,11 +43,9 @@ class ProductControllerTest extends Specification {
     def "should create product"() {
         given: "Valid product request DTO"
         def requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, dummyDescr, dummyTags)
-//        def expectedResponseDto = new ProductResponseDto("id", "testname", new PriceDto("1123123", "USD"), dummyImg, dummyDescr, dummyTags)
         def expectedResponseDto = new ProductResponseDto("id", "testname", dummyPrice, dummyImg, dummyDescr, dummyTags)
 
         def jsonGenerator = new JsonGenerator.Options().excludeFieldsByName("id").build()
-
         when: "Creating product with POST request"
         String requestJson = mapToJson(requestDto)
         ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(productsUrl(), getHttpRequest(requestJson), ProductResponseDto.class)
@@ -55,7 +59,7 @@ class ProductControllerTest extends Specification {
         given: "ID of existing product"
         def requestDto = new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, dummyTags)
         def existingProduct = productFacade.create(requestDto)
-        def url = productsUrl() + "/" + existingProduct.getId()
+        def url = "${productsUrl()}/${existingProduct.getId()}"
 
         when: "Request for product by ID"
         ResponseEntity<ProductResponseDto> response = httpClient.getForEntity(url, ProductResponseDto.class)
@@ -80,7 +84,7 @@ class ProductControllerTest extends Specification {
         }
     }
 
-    String productsUrl() {
+    private String productsUrl() {
         return "http://localhost:" + port + "/products"
     }
 }

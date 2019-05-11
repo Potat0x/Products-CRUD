@@ -3,6 +3,9 @@ package com.example.demo.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class ProductResponseDto {
@@ -25,7 +28,7 @@ public class ProductResponseDto {
         this.price = price;
         this.image = image;
         this.description = description;
-        this.tags = tags;
+        this.tags = nullToEmpty(tags);
     }
 
     public String getId() {
@@ -49,7 +52,11 @@ public class ProductResponseDto {
     }
 
     public Set<TagDto> getTags() {
-        return tags;
+        return nullToEmpty(tags);
+    }
+
+    private Set<TagDto> nullToEmpty(Set<TagDto> set) {
+        return set != null ? set : Collections.emptySet();
     }
 
     @Override
@@ -67,26 +74,18 @@ public class ProductResponseDto {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ProductResponseDto)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         ProductResponseDto that = (ProductResponseDto) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (price != null ? !price.equals(that.price) : that.price != null) return false;
-        if (image != null ? !image.equals(that.image) : that.image != null) return false;
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        return tags != null ? tags.equals(that.tags) : that.tags == null;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(price, that.price) &&
+                Objects.equals(image, that.image) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (price != null ? price.hashCode() : 0);
-        result = 31 * result + (image != null ? image.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        return result;
+        return Objects.hash(id, name, price, image, description, tags);
     }
 }

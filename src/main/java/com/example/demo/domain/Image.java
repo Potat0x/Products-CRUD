@@ -1,6 +1,8 @@
 package com.example.demo.domain;
 
-public class Image {
+import java.util.Objects;
+
+final class Image {
     private final String url;
 
     public Image(String url) {
@@ -12,24 +14,15 @@ public class Image {
     }
 
     @Override
-    public String toString() {
-        return "Image{" +
-                "url='" + url + '\'' +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Image)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Image image = (Image) o;
-
-        return url != null ? url.equals(image.url) : image.url == null;
+        return Objects.equals(url, image.url);
     }
 
     @Override
     public int hashCode() {
-        return url != null ? url.hashCode() : 0;
+        return Objects.hash(url);
     }
 }

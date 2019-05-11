@@ -3,6 +3,8 @@ package com.example.demo.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class TagDto {
     private final String name;
 
@@ -25,15 +27,13 @@ public class TagDto {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TagDto)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         TagDto tagDto = (TagDto) o;
-
-        return name != null ? name.equals(tagDto.name) : tagDto.name == null;
+        return Objects.equals(name, tagDto.name);
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return Objects.hash(name);
     }
 }

@@ -3,6 +3,8 @@ package com.example.demo.domain;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class PriceDto {
     private final String amount;
     private final String currency;
@@ -24,18 +26,14 @@ public class PriceDto {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PriceDto)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         PriceDto priceDto = (PriceDto) o;
-
-        if (amount != null ? !amount.equals(priceDto.amount) : priceDto.amount != null) return false;
-        return currency != null ? currency.equals(priceDto.currency) : priceDto.currency == null;
+        return Objects.equals(amount, priceDto.amount) &&
+                Objects.equals(currency, priceDto.currency);
     }
 
     @Override
     public int hashCode() {
-        int result = amount != null ? amount.hashCode() : 0;
-        result = 31 * result + (currency != null ? currency.hashCode() : 0);
-        return result;
+        return Objects.hash(amount, currency);
     }
 }
