@@ -1,6 +1,8 @@
 package com.example.demo.domain;
 
-public class Description {
+import java.util.Objects;
+
+final class Description {
     private final String text;
 
     public Description(String text) {
@@ -21,11 +23,9 @@ public class Description {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Description)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Description that = (Description) o;
-
-        return text != null ? text.equals(that.text) : that.text == null;
+        return Objects.equals(text, that.text);
     }
 
     @Override

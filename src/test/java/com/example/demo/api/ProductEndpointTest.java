@@ -12,8 +12,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,19 +27,10 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Autowired
     ProductFacade productFacade;
 
-    private final PriceDto dummyPrice = new PriceDto("99.99", "PLN");
-    private final ImageDto dummyImg = new ImageDto("https://via.placeholder.com/150");
-    private final DescriptionDto dummyDescr = new DescriptionDto("long description");
-    private final Set<TagDto> dummyTags = Set.of(new TagDto("tag1"), new TagDto("tag2"));
-
-    private String baseUrl() {
-        return appUrl() + "/products";
-    }
-
     @Test
     public void shouldCreateProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -48,9 +43,9 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToEmptyName() {
+    public void shouldReceive422DueToEmptyName() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("", dummyPrice, dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setName("").build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -61,9 +56,9 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidImageUrl() {
+    public void shouldReceive422DueToEmptyTagName() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, new ImageDto("invalid url"), dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setTags(tagDtoSetFromTagNames("", "tag")).build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -74,9 +69,9 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidCurrencyCode() {
+    public void shouldReceive422DueToEmptyTagList() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("123", "boom"), dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setTags(tagDtoSetFromTagNames()).build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -87,9 +82,9 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToInvalidPriceAmount() {
+    public void shouldReceive422DueToInvalidImageUrl() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", new PriceDto("boom", "PLN"), dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setImage(new ImageDto("invalid url")).build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -100,9 +95,35 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet422DueToEmptyDescription() {
+    public void shouldReceive422DueToInvalidCurrencyCode() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("testname", dummyPrice, dummyImg, new DescriptionDto(""), dummyTags);
+        ProductRequestDto requestDto = validDto().setPrice(new PriceDto("123", "boom")).build();
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldReceive422DueToInvalidPriceAmount() {
+        //given
+        ProductRequestDto requestDto = validDto().setPrice(new PriceDto("boom", "PLN")).build();
+
+        //when
+        String requestJson = mapToJson(requestDto);
+        ResponseEntity<ProductResponseDto> response = httpClient.postForEntity(baseUrl(), getHttpRequest(requestJson), ProductResponseDto.class);
+
+        //then
+        assertThat(response.getStatusCodeValue()).isEqualTo(422);
+    }
+
+    @Test
+    public void shouldReceive422DueToEmptyDescription() {
+        //given
+        ProductRequestDto requestDto = validDto().setDescription(new DescriptionDto("")).build();
 
         //when
         String requestJson = mapToJson(requestDto);
@@ -115,7 +136,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldGetExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setName("name2").build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
@@ -132,11 +153,11 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGetExistingProductsByTags() {
         //given
         Arrays.asList(
-                new ProductRequestDto("name1", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag4")),
-                new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag2")),
-                new ProductRequestDto("name3", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag3, tag4")),
-                new ProductRequestDto("name4", dummyPrice, dummyImg, dummyDescr, tagDtoSetFromTagNames("tag1", "tag4", "tag2"))
-        ).forEach(requestDto -> productFacade.create(requestDto));
+                validDto().setName("name1").setTags(tagDtoSetFromTagNames("tag1", "tag4")),
+                validDto().setName("name2").setTags(tagDtoSetFromTagNames("tag1", "tag2")),
+                validDto().setName("name3").setTags(tagDtoSetFromTagNames("tag1", "tag3, tag4")),
+                validDto().setName("name4").setTags(tagDtoSetFromTagNames("tag1", "tag4", "tag2"))
+        ).forEach(requestDtoBuilder -> productFacade.create(requestDtoBuilder.build()));
 
         String url = baseUrl() + "?tag=tag1&tag=tag2";
         Set<String> expectedProductsNames = Set.of("name2", "name4");
@@ -156,8 +177,8 @@ public class ProductEndpointTest extends DemoApplicationTests {
     public void shouldGetExistingProducts() {
         //given
         List<ProductResponseDto> existingProducts = new ArrayList<>();
-        existingProducts.add(productFacade.create(new ProductRequestDto("name1", dummyPrice, dummyImg, dummyDescr, dummyTags)));
-        existingProducts.add(productFacade.create(new ProductRequestDto("name2", dummyPrice, dummyImg, dummyDescr, dummyTags)));
+        existingProducts.add(productFacade.create(validDto().setName("name1").build()));
+        existingProducts.add(productFacade.create(validDto().setName("name1").build()));
 
         //when
         ResponseEntity<ProductListResponseDto> result = httpClient.getForEntity(baseUrl(), ProductListResponseDto.class);
@@ -171,7 +192,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     @Test
-    public void shouldGet404() {
+    public void shouldReceive404() {
         //given
         String url = baseUrl() + "/boom";
 
@@ -185,7 +206,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test
     public void shouldUpdateExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("old name", dummyPrice, dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().setName("old name").build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
@@ -211,7 +232,7 @@ public class ProductEndpointTest extends DemoApplicationTests {
     @Test(expected = ProductNotFoundException.class)
     public void shouldDeleteExistingProduct() {
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("name", dummyPrice, dummyImg, dummyDescr, dummyTags);
+        ProductRequestDto requestDto = validDto().build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         String url = baseUrl() + "/" + existingProduct.getId();
 
@@ -220,6 +241,15 @@ public class ProductEndpointTest extends DemoApplicationTests {
 
         //then
         productFacade.find(existingProduct.getId());
+    }
+
+    private ProductRequestDtoBuilder validDto() {
+        return new ProductRequestDtoBuilder()
+                .setName("testname")
+                .setPrice(new PriceDto("99.99", "PLN"))
+                .setImage(new ImageDto("https://via.placeholder.com/150"))
+                .setDescription(new DescriptionDto("long description"))
+                .setTags(Set.of(new TagDto("tag1"), new TagDto("tag2")));
     }
 
     private HttpEntity<String> getHttpRequest(String json) {
@@ -237,10 +267,10 @@ public class ProductEndpointTest extends DemoApplicationTests {
     }
 
     private Set<TagDto> tagDtoSetFromTagNames(String... names) {
-        Set<TagDto> tagSet = new HashSet<>();
-        for (String name : names) {
-            tagSet.add(new TagDto(name));
-        }
-        return tagSet;
+        return Stream.of(names).map(TagDto::new).collect(Collectors.toSet());
+    }
+
+    private String baseUrl() {
+        return appUrl() + "/products";
     }
 }

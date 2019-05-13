@@ -2,6 +2,7 @@ package com.example.demo.domain;
 
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 final class Price {
     private final BigDecimal amount;
@@ -31,18 +32,14 @@ final class Price {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Price)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Price price = (Price) o;
-
-        if (amount != null ? !amount.equals(price.amount) : price.amount != null) return false;
-        return currencyCode == price.currencyCode;
+        return Objects.equals(amount, price.amount) &&
+                currencyCode == price.currencyCode;
     }
 
     @Override
     public int hashCode() {
-        int result = amount != null ? amount.hashCode() : 0;
-        result = 31 * result + (currencyCode != null ? currencyCode.hashCode() : 0);
-        return result;
+        return Objects.hash(amount, currencyCode);
     }
 }

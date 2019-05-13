@@ -1,9 +1,10 @@
 package com.example.demo.domain;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Set;
 
-public final class Product {
+final public class Product {
     private final String id;
     private final String name;
     private final LocalDateTime createdAt;
@@ -49,27 +50,7 @@ public final class Product {
     public Set<Tag> getTags() {
         return tags;
     }
-
-    public Product withNewName(String newName) {
-        return new Product(id, newName, createdAt, price, image, description, tags);
-    }
-
-    public Product withNewImage(Image newImage) {
-        return new Product(id, name, createdAt, price, newImage, description, tags);
-    }
-
-    public Product withNewPrice(Price newPrice) {
-        return new Product(id, name, createdAt, newPrice, image, description, tags);
-    }
-
-    public Product withNewDescription(Description newDescription) {
-        return new Product(id, name, createdAt, price, image, newDescription, tags);
-    }
-
-    public Product withNewTags(Set<Tag> newTags) {
-        return new Product(id, name, createdAt, price, image, description, newTags);
-    }
-
+    
     @Override
     public String toString() {
         return "Product{" +
@@ -86,29 +67,19 @@ public final class Product {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Product)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-
-        if (id != null ? !id.equals(product.id) : product.id != null) return false;
-        if (name != null ? !name.equals(product.name) : product.name != null) return false;
-        if (createdAt != null ? !createdAt.equals(product.createdAt) : product.createdAt != null) return false;
-        if (price != null ? !price.equals(product.price) : product.price != null) return false;
-        if (image != null ? !image.equals(product.image) : product.image != null) return false;
-        if (description != null ? !description.equals(product.description) : product.description != null) return false;
-        return tags != null ? tags.equals(product.tags) : product.tags == null;
+        return Objects.equals(id, product.id) &&
+                Objects.equals(name, product.name) &&
+                Objects.equals(createdAt, product.createdAt) &&
+                Objects.equals(price, product.price) &&
+                Objects.equals(image, product.image) &&
+                Objects.equals(description, product.description) &&
+                Objects.equals(tags, product.tags);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
-        result = 31 * result + (price != null ? price.hashCode() : 0);
-        result = 31 * result + (image != null ? image.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (tags != null ? tags.hashCode() : 0);
-        return result;
+        return Objects.hash(id, name, createdAt, price, image, description, tags);
     }
-
 }

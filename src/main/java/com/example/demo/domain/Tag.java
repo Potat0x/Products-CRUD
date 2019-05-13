@@ -1,6 +1,8 @@
 package com.example.demo.domain;
 
-public class Tag {
+import java.util.Objects;
+
+public final class Tag {
     private final String name;
 
     public Tag(String name) {
@@ -21,15 +23,13 @@ public class Tag {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Tag)) return false;
-
+        if (o == null || getClass() != o.getClass()) return false;
         Tag tag = (Tag) o;
-
-        return name != null ? name.equals(tag.name) : tag.name == null;
+        return Objects.equals(name, tag.name);
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        return Objects.hash(name);
     }
 }
