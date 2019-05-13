@@ -2,7 +2,7 @@ package com.example.demo.domain;
 
 import java.util.Set;
 
-public final class ProductRequestDtoBuilder {
+final class ProductRequestDtoBuilder {
     private String name;
     private PriceDto price;
     private ImageDto image;

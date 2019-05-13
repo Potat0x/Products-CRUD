@@ -89,14 +89,14 @@ class ProductFacadeImpl implements ProductFacade {
     }
 
     private ProductResponseDto productToResponseDto(Product product) {
-        return new ProductResponseDto(
-                product.getId(),
-                product.getName(),
-                new PriceDto(product.getPrice().getAmount().toString(), product.getPrice().getCurrencyCode().toString()),
-                new ImageDto(product.getImage().getUrl()),
-                new DescriptionDto(product.getDescription().getText()),
-                tagsToTagDtos(product.getTags())
-        );
+        return new ProductResponseDtoBuilder()
+                .setId(product.getId())
+                .setName(product.getName())
+                .setPrice(new PriceDto(product.getPrice().getAmount().toString(), product.getPrice().getCurrencyCode().toString()))
+                .setImage(new ImageDto(product.getImage().getUrl()))
+                .setDescription(new DescriptionDto(product.getDescription().getText()))
+                .setTags(tagsToTagDtos(product.getTags()))
+                .build();
     }
 
     private Set<TagDto> tagsToTagDtos(Set<Tag> tags) {
