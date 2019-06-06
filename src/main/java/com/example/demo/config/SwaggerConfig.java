@@ -13,19 +13,20 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
-    @Bean
-    public Docket api() {
+  @Bean
+  public Docket api() {
 
-        ApiInfo apiInfo = new ApiInfoBuilder()
-                .title("SampleText API")
-                .description("Spring Boot products CRUD")
-                .build();
+    ApiInfo apiInfo =
+        new ApiInfoBuilder()
+            .title("SampleText API")
+            .description("Spring Boot products CRUD")
+            .build();
 
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.ant("/products/**"))
-                .build()
-                .apiInfo(apiInfo);
-    }
+    return new Docket(DocumentationType.SWAGGER_2)
+        .select()
+        .apis(RequestHandlerSelectors.any())
+        .paths(PathSelectors.ant("/products/**"))
+        .build()
+        .apiInfo(apiInfo);
+  }
 }

@@ -1,13 +1,14 @@
 package com.example.demo.domain
 
+import spock.lang.Specification
+import spock.lang.Unroll
+
 import com.example.demo.domain.DescriptionDto
 import com.example.demo.domain.ImageDto
 import com.example.demo.domain.PriceDto
 import com.example.demo.domain.ProductRequestDtoBuilder
 import com.example.demo.domain.TagDto
 import com.example.demo.domain.exceptions.InvalidDtoException
-import spock.lang.Specification
-import spock.lang.Unroll
 
 class ProductRequestDtoValidationTest extends Specification {
 

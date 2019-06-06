@@ -1,12 +1,5 @@
 package com.example.demo.api
 
-import com.example.demo.domain.DescriptionDto
-import com.example.demo.domain.ImageDto
-import com.example.demo.domain.PriceDto
-import com.example.demo.domain.ProductFacade
-import com.example.demo.domain.ProductRequestDto
-import com.example.demo.domain.ProductResponseDto
-import com.example.demo.domain.TagDto
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.json.JsonGenerator
@@ -18,6 +11,14 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import spock.lang.Specification
+
+import com.example.demo.domain.DescriptionDto
+import com.example.demo.domain.ImageDto
+import com.example.demo.domain.PriceDto
+import com.example.demo.domain.ProductFacade
+import com.example.demo.domain.ProductRequestDto
+import com.example.demo.domain.ProductResponseDto
+import com.example.demo.domain.TagDto
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductControllerTest extends Specification {

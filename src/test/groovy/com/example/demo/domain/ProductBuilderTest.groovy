@@ -1,7 +1,8 @@
 package com.example.demo.domain
 
-import com.example.demo.domain.exceptions.ProductBuilderException
 import spock.lang.Specification
+
+import com.example.demo.domain.exceptions.ProductBuilderException
 
 class ProductBuilderTest extends Specification {
 

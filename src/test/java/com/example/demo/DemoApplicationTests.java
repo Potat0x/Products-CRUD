@@ -11,16 +11,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public abstract class DemoApplicationTests {
-    @Autowired
-    protected TestRestTemplate httpClient;
+  @Autowired protected TestRestTemplate httpClient;
 
-    @LocalServerPort
-    protected int port;
+  @LocalServerPort protected int port;
 
-    @Autowired
-    protected ObjectMapper objectMapper;
+  @Autowired protected ObjectMapper objectMapper;
 
-    protected String appUrl() {
-        return "http://localhost:" + port;
-    }
+  protected String appUrl() {
+    return "http://localhost:" + port;
+  }
 }

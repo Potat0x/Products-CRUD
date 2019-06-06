@@ -3,13 +3,13 @@ package com.example.demo.domain;
 import java.util.List;
 
 public interface ProductFacade {
-    ProductResponseDto create(ProductRequestDto requestDto);
+  ProductResponseDto create(ProductRequestDto requestDto);
 
-    ProductResponseDto find(String id);
+  ProductResponseDto find(String id);
 
-    ProductResponseDto update(String id, ProductRequestDto requestDto);
+  ProductResponseDto update(String id, ProductRequestDto requestDto);
 
-    ProductListResponseDto getProductsByTags(List<String> tags);
+  ProductListResponseDto getProductsByTags(List<String> tags);
 
-    void delete(String id);
+  void delete(String id);
 }
